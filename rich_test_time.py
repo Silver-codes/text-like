@@ -1,7 +1,9 @@
 import time
+
 from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
+
 
 def generate_game_screen(turn: int, hp: int) -> Panel:
     """Helper function to build the current state of the UI."""
