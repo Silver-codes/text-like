@@ -2,6 +2,7 @@ import time
 
 from rich.console import Console
 
+
 #Writes text char by char on screen
 def write_on(text: str, speed: float, color):
     console = Console()
