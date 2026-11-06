@@ -1,3 +1,5 @@
+import sys
+
 from inquirer_textual import prompts
 from inquirer_textual.common.PromptSettings import PromptSettings
 from inquirer_textual.InquirerApp import InquirerApp
@@ -23,12 +25,13 @@ def main_menu():
     console.print(Panel("[bold yellow]Welcome to Text-Like[/bold yellow]", title="Text-like", style="blue"))
     result = select_menu(['Continue', 'Load game', 'Exit'],
                          settings=PromptSettings(mandatory=False))
-    if result == "Exit":
+
+    if result.value == "Exit":
+        print ("exit")
+        sys.exit()
+    elif result.value == "Continue":
         clear_screen()
-        return
-    elif result == "Continue":  # noqa: SIM114
+        return "continue"
+    elif result.value == "Load game":
         clear_screen()
-        pass
-    elif result == "Load game":
-        clear_screen()
-        pass
+        return "load_game"
