@@ -1,0 +1,137 @@
+import sys
+import time
+
+sys.path.insert(0, "../")  # add Folder_2 path to search list
+
+from inquirer_textual import prompts
+from inquirer_textual.common.Choice import Choice
+from inquirer_textual.common.PromptSettings import PromptSettings
+from inquirer_textual.InquirerApp import InquirerApp
+from inquirer_textual.widgets.InquirerSelect import InquirerSelect
+from rich.console import Console
+from rich.live import Live
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
+
+from clear_screen import clear_screen
+from enemies import Enemy
+from player import Player
+
+console = Console()
+
+#removing ? from menu
+class NoQuestionApp(InquirerApp):
+    CSS = "Prompt { display: none; }"
+
+
+def select_menu(choices, settings=PromptSettings()):
+    app = NoQuestionApp(theme=settings.theme)
+    app.widget = InquirerSelect('', choices, mandatory=settings.mandatory)
+    return app.run_with_settings(settings)
+
+
+player = Player()
+enemy = Enemy()
+turn_log = []
+
+def generate_game_screen(player, enemy, turn_log) -> Panel:
+    #UI of the game screen
+    content_player = Text(justify = "center")
+    content_player.append("Player\n", style="bold green")
+    content_player.append(f"Player HP: {player.health}/{player.health_max}\n", style="red" if player.health > player.health_max * 0.25 else "bold red")
+    content_player.append(f"Player Stamina: {player.stamina}/{player.stamina_max}\n", style="green" if player.health > player.health_max * 0.25 else "bold red")
+    content_player.append(f"Player Mana: {player.mana}/{player.mana_max}\n", style="blue" if player.health > player.health_max * 0.25 else "bold red")
+
+    action_text = Text(justify = "left")
+    for message in turn_log:
+            action_text.append(message + "\n")
+
+    content_enemy = Text(justify = "center")
+    content_enemy.append("Enemy\n", style="bold red")
+    content_enemy.append(f"Enemy HP: {enemy.health}/{enemy.health_max}\n")
+
+    table = Table.grid(expand=True)
+    table.add_column(justify = "left", ratio=1)
+    table.add_column(justify = "right", ratio=1)
+    table.add_row(content_player, content_enemy)
+    table.add_row(action_text)
+
+    return Panel(table, title="[bold yellow]Stage placeholder (eg. 1st Floor)[/bold yellow]", border_style="blue")
+
+# Simulate a game loop
+clear_screen()
+#Add back option to Cast Menu
+cast_menu = player.spells
+cast_menu.append("Back")
+try:
+
+    # Initialize Live display (auto_refresh keeps it rendering smoothly)
+    with Live(generate_game_screen(player, enemy, turn_log), console=console, refresh_per_second=4, screen=False, transient= True) as live:
+        while True:
+            live.stop()
+            console.clear()
+            console.print(generate_game_screen(player, enemy, turn_log))
+
+            #Menu
+            result = select_menu([
+                                Choice(f"Attack ({player.attack_stamina_cost} stamina)", data="attack"),
+                                Choice('Cast', data="cast"),
+                                Choice('Rest', data="rest"),
+                                Choice('Exit', data="exit")],
+                                 settings=PromptSettings(mandatory=False))
+
+            #Player response
+            if result is None or result.value.data == "exit":
+                    break
+            if result.value.data == "attack":
+                if player.stamina < player.attack_stamina_cost:
+                    turn_log.append("Not enough stamina")
+                    continue
+                turn_log = []
+                damage_dealt = player.attack(enemy)
+                turn_log.append(f"- You dealt {damage_dealt} damage to enemy.")
+            #Spell Casting - TODO low mana handeling
+            elif result.value.data == "cast":
+                cast = select_menu(cast_menu, # TODO - spells should be objects
+                                     settings=PromptSettings(mandatory=False))
+                if cast.value == "Back":
+                    continue
+                turn_log = []
+                damage_dealt = player.cast_spell(enemy, cast.value)
+                turn_log.append(f"- You cast {cast.value} and deal {damage_dealt} damage to enemy.")
+            elif result.value.data == "rest":
+                turn_log = []
+                turn_log.append("You did nothing")
+
+
+            #check for win condition
+            if enemy.health <= 0:
+                console.clear()
+                console.print(generate_game_screen(player, enemy, turn_log))
+                console.print("\n[bold green]You won![/bold green]")
+                break
+
+            console.clear()
+            live.update(generate_game_screen(player, enemy, turn_log))
+            live.start(refresh=True)
+
+            damage_dealt = enemy.attack(player) # TODO Enemy turn logic
+            turn_log.append(f"- Enemy dealt {damage_dealt} damage to player.")
+
+            #check for loss condition
+            if player.health <= 0:
+                console.clear()
+                console.print(generate_game_screen(player, enemy, turn_log))
+                console.print("\n[bold red]You lost![/bold red]")
+                break
+
+            time.sleep(1.5)
+            live.update(generate_game_screen(player, enemy, turn_log), refresh=True)
+            player.regen()
+            time.sleep(0.5)
+
+        console.print("\n[bold red]Game Over![/bold red]")
+
+except KeyboardInterrupt:
+    print("\nGame exited.")
