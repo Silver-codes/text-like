@@ -12,7 +12,7 @@ PLAYER_STARTING_ATTACK_STAMINA_COST = 5
 PLAYER_STARTING_MANA = 25
 PLAYER_STARTING_MANA_REGEN = 1
 
-PLAYER_STARTING_STAMINA = 5
+PLAYER_STARTING_STAMINA = 50
 PLAYER_STARTING_STAMINA_REGEN = 1
 
 PLAYER_STARTING_EVASION = 0.0
@@ -21,3 +21,28 @@ PLAYER_STARTING_ARMOR = 0.0
 
 PLAYER_LOW_HEALTH_THRESHOLD = 20 #at what % of health is damage taken lower
 PLAYER_LOW_HEALTH_ADVANTAGE = 0.66 #damage taken when under threshold - MUST BE ABOVE 0.5
+
+
+#Enemy starting stats
+ENEMY_VULNERABILITY = {
+    "normal" : 1,
+    "fire" : 1,
+    "ice" : 1,
+    "electric" : 1,
+    "bleed" : 1,
+    "poison" : 1
+}
+
+#Unit 7-Null
+ENEMY_UNIT7_HEALTH = 12
+ENEMY_UNIT7_ATTACK_POWER = 2
+ENEMY_UNIT7_EVASION = 0.0
+ENEMY_UNIT7_ARMOR = 0
+ENEMY_UNIT7_VULNERABILITY = {
+    "normal" : 1,
+    "fire" : 1,
+    "ice" : 1,
+    "electric" : 1.6,
+    "bleed" : 0.3,
+    "poison" : 0.3
+}

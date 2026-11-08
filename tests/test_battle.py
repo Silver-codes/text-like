@@ -8,14 +8,13 @@ from inquirer_textual.common.Choice import Choice
 from inquirer_textual.common.PromptSettings import PromptSettings
 from inquirer_textual.InquirerApp import InquirerApp
 from inquirer_textual.widgets.InquirerSelect import InquirerSelect
-from rich.console import Console
-from rich.live import Live
+from rich.console import Console, Group
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
 from clear_screen import clear_screen
-from enemies import Enemy
+from enemies import Enemy, Enemy_Unit7
 from player import Player
 
 console = Console()
@@ -32,7 +31,7 @@ def select_menu(choices, settings=PromptSettings()):
 
 
 player = Player()
-enemy = Enemy()
+enemy = Enemy_Unit7()
 turn_log = []
 
 def generate_game_screen(player, enemy, turn_log) -> Panel:
@@ -48,96 +47,103 @@ def generate_game_screen(player, enemy, turn_log) -> Panel:
             action_text.append(message + "\n")
 
     content_enemy = Text(justify = "center")
-    content_enemy.append("Enemy\n", style="bold red")
+    content_enemy.append(f"{enemy.name}\n", style="bold red")
     content_enemy.append(f"Enemy HP: {enemy.health}/{enemy.health_max}\n")
+    content_enemy.append(f"Revivals: {enemy.revivals}\n")
 
     table = Table.grid(expand=True)
     table.add_column(justify = "left", ratio=1)
     table.add_column(justify = "right", ratio=1)
     table.add_row(content_player, content_enemy)
-    table.add_row(action_text)
 
-    return Panel(table, title="[bold yellow]Stage placeholder (eg. 1st Floor)[/bold yellow]", border_style="blue")
+    layout = Group(table, action_text)
+
+    return Panel(layout, title="[bold yellow]Stage placeholder (eg. 1st Floor)[/bold yellow]", border_style="blue")
 
 # Simulate a game loop
 clear_screen()
 #Add back option to Cast Menu
-cast_menu = player.spells
-cast_menu.append("Back")
+cast_menu = [Choice(f"{spell.name} ({spell.cost} mana)", data = spell) for spell in player.spells]
+if cast_menu == []:
+    cast_menu.append(Choice("Back (You have no spells)", data = "back"))
+else:
+    cast_menu.append(Choice("Back", data = "back"))
+
+# Main Battle lopp
 try:
 
-    # Initialize Live display (auto_refresh keeps it rendering smoothly)
-    with Live(generate_game_screen(player, enemy, turn_log), console=console, refresh_per_second=4, screen=False, transient= True) as live:
-        while True:
-            live.stop()
+    while True:
+
+        console.clear()
+        console.print(generate_game_screen(player, enemy, turn_log))
+
+        #Menu
+        result = select_menu([
+                            Choice(f"Attack ({player.attack_stamina_cost} stamina)", data="attack"),
+                            Choice('Cast', data="cast"),
+                            Choice('Rest', data="rest"),
+                            Choice('Exit', data="exit")],
+                                settings=PromptSettings(mandatory=False))
+
+        #Player response and plain attack
+        if result is None or result.value.data == "exit":
+                break
+        if result.value.data == "attack":
+            if player.stamina < player.attack_stamina_cost:
+                if "Not enough stamina" not in turn_log:
+                    turn_log.append("Not enough stamina")
+                continue
+            turn_log = []
+            damage_dealt = player.attack(enemy)
+            turn_log.append(f"- You dealt {damage_dealt[0]} damage to enemy.")
+
+        #Spell Casting
+        elif result.value.data == "cast":
+            cast = select_menu(cast_menu,
+                                    settings=PromptSettings(mandatory=False))
+            if cast.value.data == "back":
+                continue
+            spell = cast.value.data
+            if player.mana < spell.cost:
+                if "Not enough mana" not in turn_log:
+                    turn_log.append("Not enough mana")
+                continue
+            turn_log = []
+            damage_dealt, damage_info = player.cast_spell(enemy, spell)
+            turn_log.append(f"- You cast {spell.name} and deal {damage_dealt} damage to enemy. {damage_info}")
+        elif result.value.data == "rest":
+            turn_log = []
+            turn_log.append("You did nothing")
+
+
+        #check for win condition
+        if enemy.health <= 0:
             console.clear()
             console.print(generate_game_screen(player, enemy, turn_log))
+            console.print("\n[bold green]You won![/bold green]")
+            break
 
-            #Menu
-            result = select_menu([
-                                Choice(f"Attack ({player.attack_stamina_cost} stamina)", data="attack"),
-                                Choice('Cast', data="cast"),
-                                Choice('Rest', data="rest"),
-                                Choice('Exit', data="exit")],
-                                 settings=PromptSettings(mandatory=False))
-
-            #Player response and plain attack
-            if result is None or result.value.data == "exit":
-                    break
-            if result.value.data == "attack":
-                if player.stamina < player.attack_stamina_cost:
-                    if "Not enough stamina" not in turn_log:
-                        turn_log.append("Not enough stamina")
-                    continue
-                turn_log = []
-                damage_dealt = player.attack(enemy)
-                turn_log.append(f"- You dealt {damage_dealt} damage to enemy.")
-
-            #Spell Casting
-            elif result.value.data == "cast":
-                cast = select_menu(cast_menu, # TODO - spells should be objects
-                                     settings=PromptSettings(mandatory=False))
-                if cast.value == "Back":
-                    continue
-                elif player.mana < cast.value.cost:
-                    if "Not enough mana" not in turn_log:
-                        turn_log.append("Not enough mana")
-                    continue
-                turn_log = []
-                damage_dealt = player.cast_spell(enemy, cast.value)
-                turn_log.append(f"- You cast {cast.value.name} and deal {damage_dealt} damage to enemy.")
-            elif result.value.data == "rest":
-                turn_log = []
-                turn_log.append("You did nothing")
+        console.clear()
+        console.print(generate_game_screen(player, enemy, turn_log))
 
 
-            #check for win condition
-            if enemy.health <= 0:
-                console.clear()
-                console.print(generate_game_screen(player, enemy, turn_log))
-                console.print("\n[bold green]You won![/bold green]")
-                break
+        damage_dealt = enemy.attack(player) # TODO Enemy turn logic
+        turn_log.append(f"- Enemy dealt {damage_dealt} damage to player.")
 
+        #check for loss condition
+        if player.health <= 0:
             console.clear()
-            live.update(generate_game_screen(player, enemy, turn_log))
-            live.start(refresh=True)
+            console.print(generate_game_screen(player, enemy, turn_log))
+            console.print("\n[bold red]You lost![/bold red]")
+            break
 
-            damage_dealt = enemy.attack(player) # TODO Enemy turn logic
-            turn_log.append(f"- Enemy dealt {damage_dealt} damage to player.")
+        time.sleep(1.5)
+        console.clear()
+        console.print(generate_game_screen(player, enemy, turn_log))
+        player.regen()
+        time.sleep(0.5)
 
-            #check for loss condition
-            if player.health <= 0:
-                console.clear()
-                console.print(generate_game_screen(player, enemy, turn_log))
-                console.print("\n[bold red]You lost![/bold red]")
-                break
-
-            time.sleep(1.5)
-            live.update(generate_game_screen(player, enemy, turn_log), refresh=True)
-            player.regen()
-            time.sleep(0.5)
-
-        console.print("\n[bold red]Game Over![/bold red]")
+    console.print("\n[bold red]Game Over![/bold red]")
 
 except KeyboardInterrupt:
     print("\nGame exited.")

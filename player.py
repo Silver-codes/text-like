@@ -14,7 +14,7 @@ from constants import (
     PLAYER_STARTING_STAMINA_REGEN,
 )
 from enemies import Enemy
-from spells import FIREBALL, FROST_BEAM, Spell
+from spells import ELECTRIC_PULSE, FIREBALL, FROST_BEAM, Spell
 
 
 class Player:
@@ -31,7 +31,7 @@ class Player:
         self.stamina_max = PLAYER_STARTING_STAMINA
         self.stamina_regen = PLAYER_STARTING_STAMINA_REGEN
 
-        self.spells: list[Spell] = [FIREBALL, FROST_BEAM]
+        self.spells: list[Spell] = [FIREBALL, FROST_BEAM, ELECTRIC_PULSE]
         self.__mana = PLAYER_STARTING_MANA
         self.mana_max = PLAYER_STARTING_MANA
         self.mana_regen = PLAYER_STARTING_MANA_REGEN
@@ -85,7 +85,7 @@ class Player:
         else:
             self.__mana = value
 
-    def take_damage(self, damage_taken: float) -> int:
+    def take_damage(self, damage_taken: float, type: str) -> int:
         if self.evasion < random.random(): #checks if evades
             if self.health_percentage > PLAYER_LOW_HEALTH_THRESHOLD: #recieves smaller damage when under x% health
                 actual_damage = round(damage_taken - self.armor)
@@ -98,11 +98,11 @@ class Player:
 
     def attack(self, enemy: Enemy) -> int: # TODO stamina handeling
         self.stamina -= self.attack_stamina_cost
-        return enemy.take_damage(self.attack_power)
+        return enemy.take_damage(self.attack_power, "normal")
 
-    def cast_spell(self, enemy, spell) -> int:  # TODO mana handeling
-        self.mana -= spell.cost #acceses the mana cost (second position)
-        return enemy.take_damage(spell.damage) #acceses the damage (first position)
+    def cast_spell(self, enemy, spell) -> tuple[int, str]:  # TODO mana handeling
+        self.mana -= spell.cost #acceses the mana cost
+        return enemy.take_damage(spell.damage, spell.effect) #acceses the damage + type of dmg
 
     def regen(self):
         if self.stamina < self.stamina_max:

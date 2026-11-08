@@ -1,5 +1,14 @@
 import random
 
+from constants import (
+    ENEMY_UNIT7_ARMOR,
+    ENEMY_UNIT7_ATTACK_POWER,
+    ENEMY_UNIT7_EVASION,
+    ENEMY_UNIT7_HEALTH,
+    ENEMY_UNIT7_VULNERABILITY,
+    ENEMY_VULNERABILITY)
+
+
 
 class Enemy:
     def __init__(self) -> None:
@@ -10,6 +19,7 @@ class Enemy:
         self.stamina = 50
         self.evasion = 0.0
         self.armor = 0
+        self.vulneribility = ENEMY_VULNERABILITY
 
     @property
     def health(self):
@@ -24,14 +34,45 @@ class Enemy:
         else:
             self.__health = value
 
-    def take_damage(self, damage_taken: float) -> int:
+    def take_damage(self, damage_taken: float, type: str) -> tuple[int, str]:
         if self.evasion < random.random(): #checks if evades
-            actual_damage = round(damage_taken - self.armor)
+            actual_damage = (damage_taken * self.vulneribility[type]) - self.armor
+            actual_damage = round(actual_damage) # rounding, cause I want only integer hp
             actual_damage = max(actual_damage, 0) #actual dmg can't be negative
             self.health -= actual_damage
-            return actual_damage
-        return 0
+            if self.vulneribility[type] > 1:
+                damage_info = "Critical hit!"
+            elif self.vulneribility[type] < 0.9:
+                damage_info = "Not very effective..."
+            else:
+                damage_info = ""
+            return actual_damage, damage_info
+        return 0, "Enemy evaded the attack"
 
     def attack(self, player):
-        self.stamina -= 5
-        return player.take_damage(self.attack_power)
+        return player.take_damage(self.attack_power, "normal")
+
+#1 Unit 7-Null
+class Enemy_Unit7(Enemy):
+    def __init__(self):
+        self.name = "Unit 7-Null"
+        self.revivals = "N/A"
+        self.health_max = ENEMY_UNIT7_HEALTH
+        self.__health = ENEMY_UNIT7_HEALTH
+        self.attack_power = ENEMY_UNIT7_ATTACK_POWER
+        self.evasion = ENEMY_UNIT7_EVASION
+        self.armor = ENEMY_UNIT7_ARMOR
+        self.vulneribility = ENEMY_UNIT7_VULNERABILITY
+
+    @property
+    def health(self):
+        return self.__health
+
+    @health.setter
+    def health(self, value):
+        if value < 0:
+            self.__health = 0
+        elif value > self.health_max:
+            self.__health = self.health_max
+        else:
+            self.__health = value
