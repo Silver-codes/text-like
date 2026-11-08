@@ -81,25 +81,31 @@ try:
                                 Choice('Exit', data="exit")],
                                  settings=PromptSettings(mandatory=False))
 
-            #Player response
+            #Player response and plain attack
             if result is None or result.value.data == "exit":
                     break
             if result.value.data == "attack":
                 if player.stamina < player.attack_stamina_cost:
-                    turn_log.append("Not enough stamina")
+                    if "Not enough stamina" not in turn_log:
+                        turn_log.append("Not enough stamina")
                     continue
                 turn_log = []
                 damage_dealt = player.attack(enemy)
                 turn_log.append(f"- You dealt {damage_dealt} damage to enemy.")
-            #Spell Casting - TODO low mana handeling
+
+            #Spell Casting
             elif result.value.data == "cast":
                 cast = select_menu(cast_menu, # TODO - spells should be objects
                                      settings=PromptSettings(mandatory=False))
                 if cast.value == "Back":
                     continue
+                elif player.mana < cast.value.cost:
+                    if "Not enough mana" not in turn_log:
+                        turn_log.append("Not enough mana")
+                    continue
                 turn_log = []
                 damage_dealt = player.cast_spell(enemy, cast.value)
-                turn_log.append(f"- You cast {cast.value} and deal {damage_dealt} damage to enemy.")
+                turn_log.append(f"- You cast {cast.value.name} and deal {damage_dealt} damage to enemy.")
             elif result.value.data == "rest":
                 turn_log = []
                 turn_log.append("You did nothing")

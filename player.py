@@ -20,19 +20,19 @@ from spells import FIREBALL, FROST_BEAM, Spell
 class Player:
     def __init__(self) -> None:
 
-        self.health = PLAYER_STARTING_HEALTH
+        self.__health = PLAYER_STARTING_HEALTH
         self.health_max = PLAYER_STARTING_HEALTH
 
         self.attack_power = PLAYER_STARTING_ATTACK_POWER
         self.attack_power_max = PLAYER_STARTING_ATTACK_POWER
         self.attack_stamina_cost = PLAYER_STARTING_ATTACK_STAMINA_COST
 
-        self.stamina = PLAYER_STARTING_STAMINA
+        self.__stamina = PLAYER_STARTING_STAMINA
         self.stamina_max = PLAYER_STARTING_STAMINA
         self.stamina_regen = PLAYER_STARTING_STAMINA_REGEN
 
         self.spells: list[Spell] = [FIREBALL, FROST_BEAM]
-        self.mana = PLAYER_STARTING_MANA
+        self.__mana = PLAYER_STARTING_MANA
         self.mana_max = PLAYER_STARTING_MANA
         self.mana_regen = PLAYER_STARTING_MANA_REGEN
 
@@ -44,7 +44,46 @@ class Player:
 
     @property
     def health_percentage(self) -> float:
-        return (self.health / self.health_max) * 100
+        return (self.__health / self.health_max) * 100
+
+    @property
+    def health(self):
+        return self.__health
+
+    @health.setter
+    def health(self, value):
+        if value < 0:
+            self.__health = 0
+        elif value > self.health_max:
+            self.__health = self.health_max
+        else:
+            self.__health = value
+
+    @property
+    def stamina(self):
+        return self.__stamina
+
+    @stamina.setter
+    def stamina(self, value):
+        if value < 0:
+            self.__stamina = 0
+        elif value > self.stamina_max:
+            self.__stamina = self.stamina_max
+        else:
+            self.__stamina = value
+
+    @property
+    def mana(self):
+        return self.__mana
+
+    @mana.setter
+    def mana(self, value):
+        if value < 0:
+            self.__mana = 0
+        elif value > self.mana_max:
+            self.__mana = self.mana_max
+        else:
+            self.__mana = value
 
     def take_damage(self, damage_taken: float) -> int:
         if self.evasion < random.random(): #checks if evades
