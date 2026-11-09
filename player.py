@@ -100,7 +100,7 @@ class Player:
             return actual_damage
         return 0
 
-    def attack(self, enemy: Enemy) -> int:
+    def attack(self, enemy: Enemy):
         self.stamina -= self.attack_stamina_cost
         return enemy.take_damage(self.attack_power, "normal")
 
