@@ -1,3 +1,4 @@
+from operator import truediv
 import sys
 import time
 
@@ -28,6 +29,23 @@ def select_menu(choices, settings=PromptSettings()):
     app = NoQuestionApp(theme=settings.theme)
     app.widget = InquirerSelect('', choices, mandatory=settings.mandatory)
     return app.run_with_settings(settings)
+
+
+def check_for_win(enemy):
+    if enemy.health <= 0:
+        console.clear()
+        console.print(generate_game_screen(player, enemy, turn_log))
+        console.print("\n[bold green]You won![/bold green]")
+        return True
+    return False
+
+def check_for_loss(player):
+    if player.health <= 0:
+        console.clear()
+        console.print(generate_game_screen(player, enemy, turn_log))
+        console.print("\n[bold red]You lost![/bold red]")
+        return True
+    return False
 
 
 player = Player()
@@ -113,14 +131,11 @@ try:
             turn_log.append(f"- You cast {spell.name} and deal {damage_dealt} damage to enemy. {damage_info}")
         elif result.value.data == "rest":
             turn_log = []
-            turn_log.append("You did nothing")
+            turn_log.append("- You did nothing")
 
 
         #check for win condition
-        if enemy.health <= 0:
-            console.clear()
-            console.print(generate_game_screen(player, enemy, turn_log))
-            console.print("\n[bold green]You won![/bold green]")
+        if check_for_win(enemy):
             break
 
         console.clear()
@@ -131,16 +146,23 @@ try:
         turn_log.append(f"- Enemy dealt {damage_dealt} damage to player.")
 
         #check for loss condition
-        if player.health <= 0:
-            console.clear()
-            console.print(generate_game_screen(player, enemy, turn_log))
-            console.print("\n[bold red]You lost![/bold red]")
+        if check_for_loss(player):
             break
 
         time.sleep(1.5)
         console.clear()
+
+        #refreshes and win/loss conditions
+        player_refresh_message = player.refresh()
+        enemy_refresh_message = enemy.refresh()
+        if player_refresh_message != "":
+            turn_log.append(f"- {player_refresh_message}")
+        if enemy_refresh_message != "":
+            turn_log.append(f"- {enemy_refresh_message}")
         console.print(generate_game_screen(player, enemy, turn_log))
-        player.regen()
+        if check_for_loss(player) or check_for_win(enemy):
+            break
+
         time.sleep(0.5)
 
     console.print("\n[bold red]Game Over![/bold red]")

@@ -1,3 +1,4 @@
+from math import log
 import random
 
 from constants import (
@@ -41,6 +42,9 @@ class Player:
 
         self.armor = PLAYER_STARTING_ARMOR
         self.armor_max = PLAYER_STARTING_ARMOR
+
+        self.state_fire = [5, 1] # shows if entity is burning - [dmg, num_rounds_left]
+        self.state_poison = [6, 3] # shows if entity is poisoned - [dmg, num_rounds_left]
 
     @property
     def health_percentage(self) -> float:
@@ -96,16 +100,29 @@ class Player:
             return actual_damage
         return 0
 
-    def attack(self, enemy: Enemy) -> int: # TODO stamina handeling
+    def attack(self, enemy: Enemy) -> int:
         self.stamina -= self.attack_stamina_cost
         return enemy.take_damage(self.attack_power, "normal")
 
-    def cast_spell(self, enemy, spell) -> tuple[int, str]:  # TODO mana handeling
+    def cast_spell(self, enemy, spell) -> tuple[int, str]:
         self.mana -= spell.cost #acceses the mana cost
         return enemy.take_damage(spell.damage, spell.effect) #acceses the damage + type of dmg
 
-    def regen(self):
+    def refresh(self): #actions that happen at the end of every round
+        # Regeneration
         if self.stamina < self.stamina_max:
             self.stamina += self.stamina_regen
         if self.mana < self.mana_max:
             self.mana += self.mana_regen
+
+        # State effects (burn, poison)
+        message = ""
+        if self.state_fire[1] > 0:
+            self.health -= self.state_fire[0]
+            self.state_fire[1] -= 1
+            message += f"You burn for {self.state_fire[0]} dmg. "
+        if self.state_poison[1] > 0:
+            self.health -= self.state_poison[0]
+            self.state_poison[1] -= 1
+            message += f"You are poisoned for {self.state_poison[0]} dmg"
+        return message
