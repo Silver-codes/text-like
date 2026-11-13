@@ -83,6 +83,11 @@ def generate_game_screen(player, enemy, turn_log) -> Panel:
     content_enemy.append(f"Enemy HP: {enemy.health}/{enemy.health_max}\n")
     content_enemy.append(f"Revivals: {enemy.revivals}\n")
 
+    ##TEMP##
+    content_enemy.append(f"enemy Stamina: {enemy.stamina}/{enemy.stamina_max}\n")
+    content_enemy.append(f"enemy Mana: {enemy.mana}/{enemy.mana_max}\n")
+    ##TEMP##
+
     content_enemy.append(Text.from_markup(state_emojis(enemy)))
 
     table = Table.grid(expand=True)
@@ -135,6 +140,7 @@ try:
                 turn_log = []
                 damage_dealt = player.attack(enemy)
                 turn_log.append(f"- You dealt {damage_dealt[0]} damage to enemy.")
+
 
             #Spell Casting
             elif result.value.data == "cast":

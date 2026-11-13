@@ -67,9 +67,6 @@ class Player:
         self.state_effects = self.state_effects = {effect: [0, 0] for effect in EFFECT_TYPES} # shows state effects - [dmg, num_rounds_left]
         # for defend its [0, num_rounds left], dmg reduced by defend set in self.defend_armor
 
-    @property
-    def health_percentage(self) -> float:
-        return (self.__health / self.health_max) * 100
 
     @property
     def health(self):
@@ -83,6 +80,12 @@ class Player:
             self.__health = self.health_max
         else:
             self.__health = value
+
+    @property
+    def health_percentage(self) -> float:
+        if self.health_max <= 0:
+            return 0.0
+        return (self.health / self.health_max) * 100
 
     @property
     def stamina(self):

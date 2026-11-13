@@ -69,11 +69,23 @@ ENEMY_VULNERABILITY = {
 
 ####################   1 Unit 7-Null   ####################
 ENEMY_UNIT7_HEALTH = 120
+ENEMY_UNIT7_HEALTH_MAX = 120
 ENEMY_UNIT7_HEALTH_REGEN = 0
+
 ENEMY_UNIT7_ATTACK_POWER = 8
+
+ENEMY_UNIT7_STAMINA = 10
+ENEMY_UNIT7_STAMINA_MAX = 10
+ENEMY_UNIT7_STAMINA_REGEN = 2
+
 ENEMY_UNIT7_MAGICK_POWER = 1
-ENEMY_UNIT7_EVASION = 0.0
+ENEMY_UNIT7_MANA = 10
+ENEMY_UNIT7_MANA_MAX = 10
+ENEMY_UNIT7_MANA_REGEN = 2
+
+ENEMY_UNIT7_EVASION = 0.9
 ENEMY_UNIT7_ARMOR = 0
+
 ENEMY_UNIT7_DEFEND_ARMOR = 1
 ENEMY_UNIT7_DEFEND_ARMOR_DURATION = 1
 ENEMY_UNIT7_VULNERABILITY = {
@@ -87,7 +99,7 @@ ENEMY_UNIT7_VULNERABILITY = {
 }
 ENEMY_UNIT7_STATE_EFFECTS = {effect: [0, 0] for effect in EFFECT_TYPES}
 
-ENEMY_UNIT7_ACTIONS = ["attack", "cast_spell", "defend"]
+ENEMY_UNIT7_ACTIONS = ["attack", "cast_spell", "defend", "rest"]
 
 ENEMY_UNIT7_ATTACK_MESSAGES = [
     "Unit 7-Null slashes you for {damage} dmg",
@@ -98,5 +110,11 @@ ENEMY_UNIT7_ATTACK_MESSAGES = [
 ENEMY_UNIT7_DEFEND_MESSAGES = [
     "Unit 7-Null braces for impact",
     "Unit 7-Null curles in a ball",
-    "Unit 7-Null covers in fear"
+    "Unit 7-Null covers"
+]
+
+ENEMY_UNIT7_REST_MESSAGES = [
+    "Unit 7-Null is out of power. +{stamina} stamina, +{mana} energy",
+    "Unit 7-Null is regaining power. +{stamina} stamina, +{mana} energy",
+    "Unit 7-Null needs maintenance. +{stamina} stamina, +{mana} energy"
 ]

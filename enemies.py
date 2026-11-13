@@ -14,32 +14,60 @@ from constants import (
     ENEMY_UNIT7_DEFEND_MESSAGES,
     ENEMY_UNIT7_EVASION,
     ENEMY_UNIT7_HEALTH,
+    ENEMY_UNIT7_HEALTH_MAX,
     ENEMY_UNIT7_HEALTH_REGEN,
     ENEMY_UNIT7_MAGICK_POWER,
+    ENEMY_UNIT7_MANA,
+    ENEMY_UNIT7_MANA_MAX,
+    ENEMY_UNIT7_MANA_REGEN,
+    ENEMY_UNIT7_REST_MESSAGES,
+    ENEMY_UNIT7_STAMINA,
+    ENEMY_UNIT7_STAMINA_MAX,
+    ENEMY_UNIT7_STAMINA_REGEN,
     ENEMY_UNIT7_STATE_EFFECTS,
     ENEMY_UNIT7_VULNERABILITY,
     ENEMY_VULNERABILITY,
 )
-from spells import ELECTRIC_PULSE, FIREBALL, FROST_BEAM, NO_SPELL, POISON_SPIKE, STUN, Spell
+from spells import (
+    ELECTRIC_PULSE,
+    FIREBALL,
+    FROST_BEAM,
+    NO_SPELL,
+    POISON_SPIKE,
+    STUN,
+    Spell,
+)
 
 
 class Enemy:
     def __init__(self) -> None:
         self.name = "Test Enemy"
+
         self.health_max = 20
         self.__health = 20
         self.health_regen = 0
+
         self.attack_power = 3
+        self.attack_stamina_cost = 8
+
+        self.__stamina = 50
+        self.stamina_max = 50
+        self.stamina_regen = 5
+
         self.magic_power = 1
-        self.mana = 40
+        self.__mana = 40
+        self.mana_max = 40
+        self.mana_regen = 2
         self.spells: list[Spell] = [FIREBALL, FROST_BEAM, ELECTRIC_PULSE, POISON_SPIKE]
-        self.stamina = 50
+
         self.evasion = 0.0
         self.armor = 0
+
         self.vulnerability = ENEMY_VULNERABILITY
         self.state_effects = {effect: [0, 0] for effect in EFFECT_TYPES} # shows state effects - [dmg, num_rounds_left]
-        self.attack_messages = [f"{self.name} attacks you for {damage} dmg"]
+        self.attack_messages = [f"{self.name} attacks you for {self.attack_power} dmg"]
         self.defend_messages = [f"{self.name} defends"]
+        self.rest_messages = [f"{self.name} rests"]
         self.defend_armor = 1
         self.defend_armor_active = 0
         self.defend_armor_duration = 1
@@ -58,6 +86,39 @@ class Enemy:
         else:
             self.__health = value
 
+    @property
+    def health_percentage(self) -> float:
+        if self.health_max <= 0:
+            return 0.0
+        return (self.health / self.health_max) * 100
+
+    @property
+    def stamina(self):
+        return self.__stamina
+
+    @stamina.setter
+    def stamina(self, value):
+        if value < 0:
+            self.__stamina = 0
+        elif value > self.stamina_max:
+            self.__stamina = self.stamina_max
+        else:
+            self.__stamina = value
+
+    @property
+    def mana(self):
+        return self.__mana
+
+    @mana.setter
+    def mana(self, value):
+        if value < 0:
+            self.__mana = 0
+        elif value > self.mana_max:
+            self.__mana = self.mana_max
+        else:
+            self.__mana = value
+
+    ### Methods ###
     def take_damage(self, damage_taken: float, spell):
         if self.evasion < random.random(): #checks if evades
             actual_damage = (damage_taken * self.vulnerability[spell.type]) - (self.armor + self.defend_armor_active) #calculates damage times vuln, minus armor
@@ -79,10 +140,11 @@ class Enemy:
             else:
                 damage_info = ""
             return actual_damage, damage_info, state_effects
-        return 0, "Enemy evaded the attack", {}
+        return 0, "Enemy evaded the attack", {} # TODO enemy evasion comunicated to player
 
     def attack(self, player):
         actual_damage = player.take_damage(self.attack_power, NO_SPELL)
+        self.stamina -= self.attack_stamina_cost
         message = random.choice(self.attack_messages).format(damage=actual_damage)
         return message
 
@@ -94,6 +156,7 @@ class Enemy:
         spell_adjusted.effect_damage *= self.magic_power
         spell_adjusted.effect_damage = round(spell_adjusted.effect_damage)
         actual_damage = player.take_damage(spell_adjusted.damage, spell_adjusted)
+        self.mana -= spell.cost
         message = f"{self.name} casts {spell.name} dealing {actual_damage} dmg"
         return message
 
@@ -102,6 +165,13 @@ class Enemy:
         self.state_effects["defend"] = [0, self.defend_armor_duration + 1] # plus one cause enemy defends right before refresh calls
         return random.choice(self.defend_messages)
 
+    def rest(self):
+        self.mana += self.mana_regen
+        self.stamina += self.stamina_regen
+        return random.choice(self.rest_messages).format(stamina=self.stamina_regen, mana=self.mana_regen)
+
+
+    # Enemy AI logic
     def take_turn(self, player):
         action = random.choice(self.actions)
         if action == "attack":
@@ -111,6 +181,8 @@ class Enemy:
             message = self.cast_spell(player, spell)
         elif action == "defend":
             message = self.defend()
+        elif action == "rest":
+            message = self.rest()
         return message
 
     def refresh(self): #actions that happen at the end of every round
@@ -134,17 +206,25 @@ class Enemy:
 ####################   1 Unit 7-Null   ####################
 class Enemy_Unit7(Enemy):
     def __init__(self):
+        super().__init__()
         self.name = "Unit 7-Null"
         self.revivals = "N/A"
 
-        self.health_max = ENEMY_UNIT7_HEALTH
-        self.__health = ENEMY_UNIT7_HEALTH
+        self.health_max = ENEMY_UNIT7_HEALTH_MAX
+        self.health = ENEMY_UNIT7_HEALTH
         self.health_regen = ENEMY_UNIT7_HEALTH_REGEN
 
         self.attack_power = ENEMY_UNIT7_ATTACK_POWER
 
+        self.stamina_max = ENEMY_UNIT7_STAMINA_MAX
+        self.stamina = ENEMY_UNIT7_STAMINA
+        self.stamina_regen = ENEMY_UNIT7_STAMINA_REGEN
+
         self.magic_power = ENEMY_UNIT7_MAGICK_POWER
         self.spells: list[Spell] = [FIREBALL, FROST_BEAM, ELECTRIC_PULSE, POISON_SPIKE]
+        self.mana_max = ENEMY_UNIT7_MANA_MAX
+        self.mana = ENEMY_UNIT7_MANA
+        self.mana_regen = ENEMY_UNIT7_MANA_REGEN
 
         self.evasion = ENEMY_UNIT7_EVASION
 
@@ -161,18 +241,6 @@ class Enemy_Unit7(Enemy):
 
         self.attack_messages = ENEMY_UNIT7_ATTACK_MESSAGES
         self.defend_messages = ENEMY_UNIT7_DEFEND_MESSAGES
+        self.rest_messages = ENEMY_UNIT7_REST_MESSAGES
 
         self.actions = ENEMY_UNIT7_ACTIONS
-
-    @property
-    def health(self):
-        return self.__health
-
-    @health.setter
-    def health(self, value):
-        if value < 0:
-            self.__health = 0
-        elif value > self.health_max:
-            self.__health = self.health_max
-        else:
-            self.__health = value
