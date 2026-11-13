@@ -5,9 +5,13 @@ from posix import stat
 from constants import (
     EFFECT_MESSAGES_ENEMY,
     EFFECT_TYPES,
+    ENEMY_UNIT7_ACTIONS,
     ENEMY_UNIT7_ARMOR,
     ENEMY_UNIT7_ATTACK_MESSAGES,
     ENEMY_UNIT7_ATTACK_POWER,
+    ENEMY_UNIT7_DEFEND_ARMOR,
+    ENEMY_UNIT7_DEFEND_ARMOR_DURATION,
+    ENEMY_UNIT7_DEFEND_MESSAGES,
     ENEMY_UNIT7_EVASION,
     ENEMY_UNIT7_HEALTH,
     ENEMY_UNIT7_HEALTH_REGEN,
@@ -16,7 +20,7 @@ from constants import (
     ENEMY_UNIT7_VULNERABILITY,
     ENEMY_VULNERABILITY,
 )
-from spells import ELECTRIC_PULSE, FIREBALL, FROST_BEAM, NO_SPELL, POISON_SPIKE, STUN
+from spells import ELECTRIC_PULSE, FIREBALL, FROST_BEAM, NO_SPELL, POISON_SPIKE, STUN, Spell
 
 
 class Enemy:
@@ -28,12 +32,18 @@ class Enemy:
         self.attack_power = 3
         self.magic_power = 1
         self.mana = 40
+        self.spells: list[Spell] = [FIREBALL, FROST_BEAM, ELECTRIC_PULSE, POISON_SPIKE]
         self.stamina = 50
         self.evasion = 0.0
         self.armor = 0
         self.vulnerability = ENEMY_VULNERABILITY
         self.state_effects = {effect: [0, 0] for effect in EFFECT_TYPES} # shows state effects - [dmg, num_rounds_left]
         self.attack_messages = [f"{self.name} attacks you for {damage} dmg"]
+        self.defend_messages = [f"{self.name} defends"]
+        self.defend_armor = 1
+        self.defend_armor_active = 0
+        self.defend_armor_duration = 1
+        self.actions = ["attack", "cast_spell", "defend"]
 
     @property
     def health(self):
@@ -50,7 +60,7 @@ class Enemy:
 
     def take_damage(self, damage_taken: float, spell):
         if self.evasion < random.random(): #checks if evades
-            actual_damage = (damage_taken * self.vulnerability[spell.type]) - self.armor #calculates damage times vuln, minus armor
+            actual_damage = (damage_taken * self.vulnerability[spell.type]) - (self.armor + self.defend_armor_active) #calculates damage times vuln, minus armor
             actual_damage = round(actual_damage) # rounding, cause I want only integer hp
             actual_damage = max(actual_damage, 0) #actual dmg can't be negative
             self.health -= actual_damage
@@ -74,10 +84,10 @@ class Enemy:
     def attack(self, player):
         actual_damage = player.take_damage(self.attack_power, NO_SPELL)
         message = random.choice(self.attack_messages).format(damage=actual_damage)
-        return actual_damage, message
+        return message
 
 
-    def cast_spell(self, player, spell) -> tuple[int, str]:
+    def cast_spell(self, player, spell):
         spell_adjusted = copy.deepcopy(spell)
         spell_adjusted.damage *= self.magic_power
         spell_adjusted.damage = round(spell_adjusted.damage)
@@ -85,8 +95,23 @@ class Enemy:
         spell_adjusted.effect_damage = round(spell_adjusted.effect_damage)
         actual_damage = player.take_damage(spell_adjusted.damage, spell_adjusted)
         message = f"{self.name} casts {spell.name} dealing {actual_damage} dmg"
-        return actual_damage, message
+        return message
 
+    def defend(self):
+        self.defend_armor_active = self.defend_armor
+        self.state_effects["defend"] = [0, self.defend_armor_duration + 1] # plus one cause enemy defends right before refresh calls
+        return random.choice(self.defend_messages)
+
+    def take_turn(self, player):
+        action = random.choice(self.actions)
+        if action == "attack":
+            message = self.attack(player)
+        elif action == "cast_spell":
+            spell = random.choice(self.spells)
+            message = self.cast_spell(player, spell)
+        elif action == "defend":
+            message = self.defend()
+        return message
 
     def refresh(self): #actions that happen at the end of every round
         # Regeneration
@@ -99,11 +124,14 @@ class Enemy:
                 if duration <= 0:
                     continue
                 self.health -= damage
-                message += EFFECT_MESSAGES_ENEMY[effect].format(name=self.name, damage=damage)
+                if effect in EFFECT_MESSAGES_ENEMY:
+                    message += EFFECT_MESSAGES_ENEMY[effect].format(damage=damage)
                 self.state_effects[effect][1] -= 1
+        if self.state_effects["defend"] == [0, 0]:
+            self.defend_armor_active = 0
         return message
 
-#1 Unit 7-Null
+####################   1 Unit 7-Null   ####################
 class Enemy_Unit7(Enemy):
     def __init__(self):
         self.name = "Unit 7-Null"
@@ -121,6 +149,9 @@ class Enemy_Unit7(Enemy):
         self.evasion = ENEMY_UNIT7_EVASION
 
         self.armor = ENEMY_UNIT7_ARMOR
+        self.defend_armor = ENEMY_UNIT7_DEFEND_ARMOR
+        self.defend_armor_active = 0
+        self.defend_armor_duration = ENEMY_UNIT7_DEFEND_ARMOR_DURATION
 
         self.vulnerability = ENEMY_UNIT7_VULNERABILITY
 
@@ -129,6 +160,9 @@ class Enemy_Unit7(Enemy):
         self.is_stunned = False
 
         self.attack_messages = ENEMY_UNIT7_ATTACK_MESSAGES
+        self.defend_messages = ENEMY_UNIT7_DEFEND_MESSAGES
+
+        self.actions = ENEMY_UNIT7_ACTIONS
 
     @property
     def health(self):

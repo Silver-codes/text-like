@@ -21,7 +21,7 @@ from clear_screen import clear_screen
 from constants import EFFECT_EMOJIS, EFFECT_TYPES
 from enemies import Enemy, Enemy_Unit7
 from player import Player
-from spells import FIREBALL, POISON_SPIKE
+from spells import FIREBALL, NO_SPELL, POISON_SPIKE, STUN
 
 console = Console()
 
@@ -96,6 +96,7 @@ def generate_game_screen(player, enemy, turn_log) -> Panel:
 
 # Simulate a game loop
 clear_screen()
+
 #Add back option to Cast Menu
 cast_menu = [Choice(f"{spell.name} ({spell.cost} mana)", data = spell) for spell in player.spells]
 if cast_menu == []:
@@ -112,13 +113,14 @@ try:
         console.print(generate_game_screen(player, enemy, turn_log))
 
         if player.state_effects["stun"][1] > 0:
+            turn_log = []
             turn_log.append("- You are stunned")
         else:
             #Menu
             result = select_menu([
                                 Choice(f"Attack ({player.attack_stamina_cost} stamina)", data="attack"),
                                 Choice('Cast', data="cast"),
-                                Choice('Rest', data="rest"),
+                                Choice('Defend', data="defend"),
                                 Choice('Exit', data="exit")],
                                     settings=PromptSettings(mandatory=False))
 
@@ -149,9 +151,10 @@ try:
                 damage_dealt, damage_info, new_effects = player.cast_spell(enemy, spell)
                 enemy.state_effects.update(new_effects)
                 turn_log.append(f"- You cast {spell.name} and deal {damage_dealt} damage to enemy. {damage_info}")
-            elif result.value.data == "rest":
+            elif result.value.data == "defend":
                 turn_log = []
-                turn_log.append("- You did nothing")
+                player.defend()
+                turn_log.append("- You prepare for an attack")
 
 
         #check for win condition
@@ -164,9 +167,9 @@ try:
         if enemy.state_effects["stun"][1] > 0:
             turn_log.append(f"- {enemy.name} is stunned")
         else:
-            damage_dealt, enemy_attack_message = enemy.cast_spell(player, FIREBALL) # TODO Enemy turn logic
-            damage_dealt, enemy_attack_message = enemy.cast_spell(player, POISON_SPIKE) # TODO Enemy turn logic
-            turn_log.append(f"- {enemy_attack_message}")
+            #enemy_attack_message = enemy.defend()
+            enemy_message = enemy.take_turn(player) # TODO Enemy turn logic
+            turn_log.append(f"- {enemy_message}")
 
             #check for loss condition
             if check_for_loss(player):
@@ -174,6 +177,7 @@ try:
 
         time.sleep(1.5)
         console.clear()
+
 
         #refreshes and win/loss conditions
         player_refresh_message = player.refresh()

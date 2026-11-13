@@ -10,6 +10,8 @@ from constants import (
     PLAYER_STARTING_ARMOR,
     PLAYER_STARTING_ATTACK_POWER,
     PLAYER_STARTING_ATTACK_STAMINA_COST,
+    PLAYER_STARTING_DEFEND_ARMOR,
+    PLAYER_STARTING_DEFEND_ARMOR_DURATION,
     PLAYER_STARTING_EVASION,
     PLAYER_STARTING_HEALTH,
     PLAYER_STARTING_MAGICK_POWER,
@@ -20,7 +22,15 @@ from constants import (
     PLAYER_STARTING_VULNERABILITY,
 )
 from enemies import Enemy
-from spells import ELECTRIC_PULSE, FIREBALL, FROST_BEAM, NO_SPELL, POISON_SPIKE, STUN, Spell
+from spells import (
+    ELECTRIC_PULSE,
+    FIREBALL,
+    FROST_BEAM,
+    NO_SPELL,
+    POISON_SPIKE,
+    STUN,
+    Spell,
+)
 
 
 class Player:
@@ -48,10 +58,14 @@ class Player:
 
         self.armor = PLAYER_STARTING_ARMOR
         self.armor_max = PLAYER_STARTING_ARMOR
+        self.defend_armor = PLAYER_STARTING_DEFEND_ARMOR
+        self.defend_armor_active = 0
+        self.defend_armor_duration = PLAYER_STARTING_DEFEND_ARMOR_DURATION
 
         self.vulnerability = PLAYER_STARTING_VULNERABILITY
 
         self.state_effects = self.state_effects = {effect: [0, 0] for effect in EFFECT_TYPES} # shows state effects - [dmg, num_rounds_left]
+        # for defend its [0, num_rounds left], dmg reduced by defend set in self.defend_armor
 
     @property
     def health_percentage(self) -> float:
@@ -99,10 +113,12 @@ class Player:
     def take_damage(self, damage_taken: float, spell):
         if self.evasion < random.random(): #checks if evades
             if self.health_percentage > PLAYER_LOW_HEALTH_THRESHOLD: #recieves smaller damage when under x% health
-                actual_damage = round(damage_taken - self.armor)
+                actual_damage = round(damage_taken - (self.armor + self.defend_armor_active))
+                actual_damage = max(actual_damage, 0) #actual dmg can't be negative
                 self.health -= actual_damage
             else:
-                actual_damage = round((damage_taken * PLAYER_LOW_HEALTH_ADVANTAGE) - self.armor)
+                actual_damage = round((damage_taken * PLAYER_LOW_HEALTH_ADVANTAGE) - (self.armor + self.defend_armor_active))
+                actual_damage = max(actual_damage, 0) #actual dmg can't be negative
                 self.health -= actual_damage
             #State effects
             if spell.type in EFFECT_TYPES:
@@ -124,6 +140,10 @@ class Player:
         spell_adjusted.effect_damage = round(spell_adjusted.effect_damage)
         return enemy.take_damage(spell_adjusted.damage, spell_adjusted) #sends the whole spell object
 
+    def defend(self):
+        self.defend_armor_active = self.defend_armor
+        self.state_effects["defend"] = [0, self.defend_armor_duration]
+
     def refresh(self): #actions that happen at the end of every round
         # Regeneration
         if self.stamina < self.stamina_max:
@@ -137,6 +157,9 @@ class Player:
                 if duration <= 0:
                     continue
                 self.health -= damage
-                message += EFFECT_MESSAGES_PLAYER[effect].format(damage=damage)
+                if effect in EFFECT_MESSAGES_PLAYER:
+                    message += EFFECT_MESSAGES_PLAYER[effect].format(damage=damage)
                 self.state_effects[effect][1] -= 1
+        if self.state_effects["defend"] == [0, 0]:
+            self.defend_armor_active = 0
         return message

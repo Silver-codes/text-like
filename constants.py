@@ -2,7 +2,7 @@ TEXT_SPEED_SLOW = 0.1
 TEXT_SPEED_MEDIUM = 0.065
 TEXT_SPEED_FAST = 0.01
 
-EFFECT_TYPES = ("fire", "poison", "stun")
+
 EFFECT_MESSAGES_ENEMY = {
     "fire": "{name} burns for {damage} dmg.",
     "poison": "{name} is poisoned for {damage} dmg.",
@@ -14,10 +14,12 @@ EFFECT_MESSAGES_PLAYER = {
     "stun": "You sare stunned.",
 }
 
+EFFECT_TYPES = ("fire", "poison", "stun", "defend")
 EFFECT_EMOJIS = {
     "fire": ":fire:",
     "poison": ":skull_and_crossbones:",
     "stun": ":dizzy:",
+    "defend": ":shield:",
 }
 
 
@@ -37,6 +39,8 @@ PLAYER_STARTING_STAMINA_REGEN = 1
 PLAYER_STARTING_EVASION = 0.0
 
 PLAYER_STARTING_ARMOR = 0.0
+PLAYER_STARTING_DEFEND_ARMOR = 1
+PLAYER_STARTING_DEFEND_ARMOR_DURATION = 1
 
 PLAYER_STARTING_VULNERABILITY = {
     "normal" : 1.0,
@@ -63,13 +67,15 @@ ENEMY_VULNERABILITY = {
     "stun" : 1
 }
 
-#Unit 7-Null
-ENEMY_UNIT7_HEALTH = 12
+####################   1 Unit 7-Null   ####################
+ENEMY_UNIT7_HEALTH = 120
 ENEMY_UNIT7_HEALTH_REGEN = 0
-ENEMY_UNIT7_ATTACK_POWER = 2
+ENEMY_UNIT7_ATTACK_POWER = 8
 ENEMY_UNIT7_MAGICK_POWER = 1
 ENEMY_UNIT7_EVASION = 0.0
 ENEMY_UNIT7_ARMOR = 0
+ENEMY_UNIT7_DEFEND_ARMOR = 1
+ENEMY_UNIT7_DEFEND_ARMOR_DURATION = 1
 ENEMY_UNIT7_VULNERABILITY = {
     "normal" : 1.0,
     "fire" : 1.0,
@@ -81,8 +87,16 @@ ENEMY_UNIT7_VULNERABILITY = {
 }
 ENEMY_UNIT7_STATE_EFFECTS = {effect: [0, 0] for effect in EFFECT_TYPES}
 
+ENEMY_UNIT7_ACTIONS = ["attack", "cast_spell", "defend"]
+
 ENEMY_UNIT7_ATTACK_MESSAGES = [
     "Unit 7-Null slashes you for {damage} dmg",
     "Unit 7-Null falls onto you for {damage} dmg",
     "Unit 7-Null throws a rock at you for {damage} dmg"
+]
+
+ENEMY_UNIT7_DEFEND_MESSAGES = [
+    "Unit 7-Null braces for impact",
+    "Unit 7-Null curles in a ball",
+    "Unit 7-Null covers in fear"
 ]
