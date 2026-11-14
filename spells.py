@@ -11,7 +11,7 @@ class Spell:
         self.effect_length = effect_length
 
 NO_SPELL = Spell("NoSpell", 0, 0, "normal", 0, 0)
-FIREBALL = Spell("Fireball", 1, 5, "fire", 2, 3)
+FIREBALL = Spell("Fireball", 2, 5, "fire", 2, 3)
 FROST_BEAM = Spell("Frost Beam", 6, 3, "ice", 0, 0)
 ELECTRIC_PULSE = Spell("Electric Pulse", 2, 2, "electric", 0, 0)
 POISON_SPIKE = Spell("Poison spike", 0, 2, "poison", 2, 4)

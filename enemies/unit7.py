@@ -21,7 +21,7 @@ class EnemyUnit7(Enemy):
     mana_regen = 2
     magic_power = 1 #is multiplied
 
-    evasion = 0.05
+    evasion = 0.005
 
     armor = 0
     defend_armor = 1
