@@ -5,6 +5,7 @@ from math import log
 from constants import (
     EFFECT_MESSAGES_PLAYER,
     EFFECT_TYPES,
+    PLAYER_ATTACK_MESSAGES,
     PLAYER_LOW_HEALTH_ADVANTAGE,
     PLAYER_LOW_HEALTH_THRESHOLD,
     PLAYER_STARTING_ARMOR,
@@ -28,6 +29,7 @@ from spells import (
     FROST_BEAM,
     NO_SPELL,
     POISON_SPIKE,
+    SPELL_CAST_MESSAGES_PLAYER,
     STUN,
     Spell,
 )
@@ -113,7 +115,7 @@ class Player:
         else:
             self.__mana = value
 
-    def take_damage(self, damage_taken: float, spell):
+    def take_damage(self, damage_taken: float):
         if self.health_percentage > PLAYER_LOW_HEALTH_THRESHOLD: #recieves smaller damage when under x% health
             actual_damage = round(damage_taken - (self.armor + self.defend_armor_active))
             actual_damage = max(actual_damage, 0) #actual dmg can't be negative
@@ -122,29 +124,60 @@ class Player:
             actual_damage = round((damage_taken * PLAYER_LOW_HEALTH_ADVANTAGE) - (self.armor + self.defend_armor_active))
             actual_damage = max(actual_damage, 0) #actual dmg can't be negative
             self.health -= actual_damage
-        #State effects
-        if spell.type in EFFECT_TYPES:
-            effect_damage_adjusted = round(spell.effect_damage * self.vulnerability[spell.type])
-            self.state_effects[spell.type] = [effect_damage_adjusted, spell.effect_length]
         return actual_damage
 
 
     def attack(self, enemy: Enemy):
         self.stamina -= self.attack_stamina_cost
-        return enemy.take_damage(self.attack_power, NO_SPELL)
 
-    def cast_spell(self, enemy, spell) -> tuple[int,str,dict]:
+        #Evasion check
+        if self.enemy_evades(enemy):
+            message = random.choice(enemy.evade_messages)
+            return message
+
+        actual_damage = enemy.take_damage(self.attack_power)
+        message = random.choice(PLAYER_ATTACK_MESSAGES).format(enemy=enemy.name, damage=actual_damage)
+        return message
+
+    def cast_spell(self, enemy, spell) -> str:
         self.mana -= spell.cost #acceses the mana cost
+
+        #Evasion check
+        if self.enemy_evades(enemy):
+            message = random.choice(enemy.evade_messages)
+            return message
+
         spell_adjusted = copy.deepcopy(spell)
         spell_adjusted.damage *= self.magic_power
         spell_adjusted.damage = round(spell_adjusted.damage)
         spell_adjusted.effect_damage *= self.magic_power
         spell_adjusted.effect_damage = round(spell_adjusted.effect_damage)
-        return enemy.take_damage(spell_adjusted.damage, spell_adjusted) #sends the whole spell object
+        actual_damage = enemy.take_damage(spell_adjusted.damage)
+        message = random.choice(SPELL_CAST_MESSAGES_PLAYER[spell]).format(enemy=enemy.name, damage=actual_damage)
+
+        #State effects
+        state_effects = {} # creates a dict with no spell state effects
+        effect_damage_adjusted = round(spell.effect_damage * enemy.vulnerability[spell.type])
+        if spell.type in EFFECT_TYPES:
+            state_effects[spell.type] = [effect_damage_adjusted, spell.effect_length]
+        enemy.state_effects.update(state_effects) #.update on empty list does nothing, so it's safe to use
+
+        #Vulnerability message
+        if self.vulnerability[spell.type] > 1:
+            message += " Critical hit!"
+        elif self.vulnerability[spell.type] < 0.9:
+            message += " Not very effective..."
+        else:
+            message += ""
+
+        return message
 
     def defend(self):
         self.defend_armor_active = self.defend_armor
         self.state_effects["defend"] = [0, self.defend_armor_duration]
+
+    def enemy_evades(self, enemy) -> bool:
+        return random.random() < enemy.evasion
 
     def refresh(self): #actions that happen at the end of every round
         # Regeneration

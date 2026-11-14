@@ -4,6 +4,11 @@ TEXT_SPEED_SLOW = 0.1
 TEXT_SPEED_MEDIUM = 0.065
 TEXT_SPEED_FAST = 0.01
 
+PLAYER_ATTACK_MESSAGES = [
+    "You hit {enemy} for {damage} damage.",
+    "You punched {enemy} for {damage} damage.",
+    "You dealt {damage} damage to your enemy"
+]
 
 EFFECT_MESSAGES_ENEMY = {
     "fire": "{name} burns for {damage} dmg.",
@@ -106,7 +111,7 @@ ENEMY_UNIT7_HEALTH = 12
 ENEMY_UNIT7_HEALTH_MAX = 12
 ENEMY_UNIT7_HEALTH_REGEN = 0
 
-ENEMY_UNIT7_ATTACK_POWER = 200
+ENEMY_UNIT7_ATTACK_POWER = 2
 ENEMY_UNIT7_ATTACK_STAMINA_COST = 3
 
 ENEMY_UNIT7_STAMINA = 10
@@ -161,4 +166,10 @@ ENEMY_UNIT7_REST_MESSAGES = [
     "Unit 7-Null is out of power. +{stamina} stamina, +{mana} energy",
     "Unit 7-Null is regaining power. +{stamina} stamina, +{mana} energy",
     "Unit 7-Null needs maintenance. +{stamina} stamina, +{mana} energy"
+]
+
+ENEMY_UNIT7_EVADE_MESSAGES = [
+    "Unit 7-Null trips and avoides your attack.",
+    "Unit 7-Null twitches and accidentaly avoids your attack.",
+    "Unit 7-Null's spastick movement causes you to miss."
 ]

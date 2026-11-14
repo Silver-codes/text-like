@@ -15,6 +15,7 @@ from constants import (
     ENEMY_UNIT7_DEFEND_ARMOR_DURATION,
     ENEMY_UNIT7_DEFEND_MESSAGES,
     ENEMY_UNIT7_DEFEND_STAMINA_COST,
+    ENEMY_UNIT7_EVADE_MESSAGES,
     ENEMY_UNIT7_EVASION,
     ENEMY_UNIT7_HEALTH,
     ENEMY_UNIT7_HEALTH_MAX,
@@ -74,6 +75,7 @@ class Enemy:
         self.attack_messages = [f"{self.name} attacks you for {self.attack_power} dmg"]
         self.defend_messages = [f"{self.name} defends"]
         self.rest_messages = [f"{self.name} rests"]
+        self.evade_messages = [f"{self.name} evades"]
         self.defend_armor = 1
         self.defend_armor_active = 0
         self.defend_armor_duration = 1
@@ -132,31 +134,16 @@ class Enemy:
             self.__mana = value
 
     ### Methods ###
-    def take_damage(self, damage_taken: float, spell):
-        if self.evasion < random.random(): #checks if evades
-            actual_damage = (damage_taken * self.vulnerability[spell.type]) - (self.armor + self.defend_armor_active) #calculates damage times vuln, minus armor
-            actual_damage = round(actual_damage) # rounding, cause I want only integer hp
-            actual_damage = max(actual_damage, 0) #actual dmg can't be negative
-            self.health -= actual_damage
+    def take_damage(self, damage_taken: float):
+        actual_damage = (damage_taken) - (self.armor + self.defend_armor_active) #calculates damage minus armor and defending
+        actual_damage = round(actual_damage) # rounding, cause I want only integer hp
+        actual_damage = max(actual_damage, 0) #actual dmg can't be negative
+        self.health -= actual_damage
+        return actual_damage
 
-            #State effects
-            state_effects = {} # creates a dict with no spell state effects
-            effect_damage_adjusted = round(spell.effect_damage * self.vulnerability[spell.type])
-            if spell.type in EFFECT_TYPES:
-                state_effects[spell.type] = [effect_damage_adjusted, spell.effect_length]
-
-            #Vulnerability message
-            if self.vulnerability[spell.type] > 1:
-                damage_info = "Critical hit!"
-            elif self.vulnerability[spell.type] < 0.9:
-                damage_info = "Not very effective..."
-            else:
-                damage_info = ""
-            return actual_damage, damage_info, state_effects
-        return 0, f"You missed. {self.name} evaded your attack", {}
 
     def attack(self, player):
-        actual_damage = player.take_damage(self.attack_power, NO_SPELL)
+        actual_damage = player.take_damage(self.attack_power)
         self.stamina -= self.attack_stamina_cost
         message = random.choice(self.attack_messages).format(damage=actual_damage)
         return message
@@ -165,10 +152,18 @@ class Enemy:
     def cast_spell(self, player, spell):
         spell_adjusted = copy.deepcopy(spell)
         spell_adjusted.damage *= self.magic_power
+        spell_adjusted.damage *= player.vulnerability[spell.type]
         spell_adjusted.damage = round(spell_adjusted.damage)
         spell_adjusted.effect_damage *= self.magic_power
+        spell_adjusted.effect_damage *= player.vulnerability[spell.type]
         spell_adjusted.effect_damage = round(spell_adjusted.effect_damage)
-        actual_damage = player.take_damage(spell_adjusted.damage, spell_adjusted)
+        actual_damage = player.take_damage(spell_adjusted.damage)
+
+        #State effects
+        if spell.type in EFFECT_TYPES:
+            effect_damage_adjusted = round(spell.effect_damage * player.vulnerability[spell.type])
+            player.state_effects[spell.type] = [effect_damage_adjusted, spell.effect_length]
+
         self.mana -= spell.cost
         message = f"{self.name} casts {spell.name} dealing {actual_damage} dmg"
         return message
@@ -240,7 +235,7 @@ class Enemy:
                     continue
                 self.health -= damage
                 if effect in EFFECT_MESSAGES_ENEMY:
-                    message += EFFECT_MESSAGES_ENEMY[effect].format(name=self.name,damage=damage)
+                    message += f"{EFFECT_MESSAGES_ENEMY[effect].format(name=self.name,damage=damage)} "
                 self.state_effects[effect][1] -= 1
         if self.state_effects["defend"] == [0, 0]:
             self.defend_armor_active = 0
@@ -287,6 +282,7 @@ class Enemy_Unit7(Enemy):
         self.attack_messages = ENEMY_UNIT7_ATTACK_MESSAGES
         self.defend_messages = ENEMY_UNIT7_DEFEND_MESSAGES
         self.rest_messages = ENEMY_UNIT7_REST_MESSAGES
+        self.evade_messages = ENEMY_UNIT7_EVADE_MESSAGES
 
         self.actions = ENEMY_UNIT7_ACTIONS
         self.action_weights = ENEMY_UNIT7_ACTION_WEIGHTS

@@ -16,3 +16,25 @@ FROST_BEAM = Spell("Frost Beam", 6, 3, "ice", 0, 0)
 ELECTRIC_PULSE = Spell("Electric Pulse", 2, 2, "electric", 0, 0)
 POISON_SPIKE = Spell("Poison spike", 0, 2, "poison", 2, 4)
 STUN = Spell("Stun", 0, 5, "stun", 0, 3)
+
+
+
+### Spell Cast Messages ###
+SPELL_CAST_MESSAGES_PLAYER = {
+    FIREBALL : [
+        "You hurled a Fireball at {enemy} for {damage} dmg",
+        "You threw a Fireball at {enemy} for {damage} dmg"
+    ],
+    FROST_BEAM : [
+        "You projected a Frost Beam at at {enemy} for {damage} dmg"
+    ],
+    ELECTRIC_PULSE : [
+        "You shocked {enemy} with Electric Pulse for {damage} dmg"
+    ],
+    POISON_SPIKE : [
+        "You stabbed {enemy} with Poison Spike for {damage} dmg"
+    ],
+    STUN : [
+        "You stunned {enemy}"
+    ]
+}

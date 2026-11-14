@@ -160,12 +160,8 @@ try:
                         turn_log.append("Not enough stamina")
                     continue
                 turn_log = []
-                damage_dealt = player.attack(enemy)
-                # Evasion handeling. Not the best, but works
-                if "evaded" in damage_dealt[1]:
-                    turn_log.append(f"- {damage_dealt[1]}")
-                else:
-                    turn_log.append(f"- You dealt {damage_dealt[0]} damage to enemy.")
+                message = player.attack(enemy)
+                turn_log.append(f"- {message}")
 
 
             #Spell Casting
@@ -180,13 +176,8 @@ try:
                         turn_log.append("Not enough mana")
                     continue
                 turn_log = []
-                damage_dealt, damage_info, new_effects = player.cast_spell(enemy, spell)
-                enemy.state_effects.update(new_effects)
-                # Evasion handeling. Not the best, but works
-                if "evaded" in damage_info:
-                    turn_log.append(f"- {damage_info}")
-                else:
-                    turn_log.append(f"- You cast {spell.name} and deal {damage_dealt} damage to enemy. {damage_info}")
+                message = player.cast_spell(enemy, spell)
+                turn_log.append(f"- {message}")
 
             elif result.value.data == "defend":
                 turn_log = []
