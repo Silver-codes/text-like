@@ -1,10 +1,9 @@
 from operator import truediv
 import sys
 import time
+import random
 
-
-
-sys.path.insert(0, "../")  # add Folder_2 path to search list
+sys.path.insert(0, "../")  # add main folder path to search list
 
 from inquirer_textual import prompts
 from inquirer_textual.common.Choice import Choice
@@ -18,8 +17,8 @@ from rich.table import Table
 from rich.text import Text
 
 from clear_screen import clear_screen
-from constants import EFFECT_EMOJIS, EFFECT_TYPES
-from enemies import Enemy, Enemy_Unit7
+from constants import EFFECT_EMOJIS, EFFECT_TYPES, LOST_BATTLE_MESSAGES, WON_BATTLE_MESSAGES
+from enemies import Enemy_Unit7
 from player import Player
 from spells import FIREBALL, NO_SPELL, POISON_SPIKE, STUN
 
@@ -35,20 +34,41 @@ def select_menu(choices, settings=PromptSettings()):
     app.widget = InquirerSelect('', choices, mandatory=settings.mandatory)
     return app.run_with_settings(settings)
 
+def generate_win_screen(enemy):
+    content = Text(justify = "center")
+    loss_message = random.choice(WON_BATTLE_MESSAGES).format(name=enemy.name)
+    content.append(loss_message, style="bold green")
+    table = Table.grid(expand=True)
+    table.add_column(justify = "center")
+    table.add_row()
+    table.add_row(content)
+    table.add_row()
+    return table
+
+def generate_loss_screen(enemy):
+    content = Text(justify = "center")
+    win_message = random.choice(LOST_BATTLE_MESSAGES).format(name=enemy.name)
+    content.append(win_message, style="bold red")
+    table = Table.grid(expand=True)
+    table.add_column(justify = "center")
+    table.add_row()
+    table.add_row(content)
+    table.add_row()
+    return table
 
 def check_for_win(enemy):
     if enemy.health <= 0:
         console.clear()
         console.print(generate_game_screen(player, enemy, turn_log))
-        console.print("\n[bold green]You won![/bold green]")
+        console.print(generate_win_screen(enemy))
         return True
     return False
 
-def check_for_loss(player):
+def check_for_loss(player, enemy):
     if player.health <= 0:
         console.clear()
         console.print(generate_game_screen(player, enemy, turn_log))
-        console.print("\n[bold red]You lost![/bold red]")
+        console.print(generate_loss_screen(enemy))
         return True
     return False
 
@@ -99,6 +119,8 @@ def generate_game_screen(player, enemy, turn_log) -> Panel:
 
     return Panel(layout, title="[bold yellow]Stage placeholder (eg. 1st Floor)[/bold yellow]", border_style="blue")
 
+
+
 # Simulate a game loop
 clear_screen()
 
@@ -126,7 +148,7 @@ try:
                                 Choice(f"Attack ({player.attack_stamina_cost} stamina)", data="attack"),
                                 Choice('Cast', data="cast"),
                                 Choice('Defend', data="defend"),
-                                Choice('Exit', data="exit")],
+                                Choice('Forfeit', data="exit")],
                                     settings=PromptSettings(mandatory=False))
 
             #Player response and plain attack
@@ -139,7 +161,11 @@ try:
                     continue
                 turn_log = []
                 damage_dealt = player.attack(enemy)
-                turn_log.append(f"- You dealt {damage_dealt[0]} damage to enemy.")
+                # Evasion handeling. Not the best, but works
+                if "evaded" in damage_dealt[1]:
+                    turn_log.append(f"- {damage_dealt[1]}")
+                else:
+                    turn_log.append(f"- You dealt {damage_dealt[0]} damage to enemy.")
 
 
             #Spell Casting
@@ -156,7 +182,12 @@ try:
                 turn_log = []
                 damage_dealt, damage_info, new_effects = player.cast_spell(enemy, spell)
                 enemy.state_effects.update(new_effects)
-                turn_log.append(f"- You cast {spell.name} and deal {damage_dealt} damage to enemy. {damage_info}")
+                # Evasion handeling. Not the best, but works
+                if "evaded" in damage_info:
+                    turn_log.append(f"- {damage_info}")
+                else:
+                    turn_log.append(f"- You cast {spell.name} and deal {damage_dealt} damage to enemy. {damage_info}")
+
             elif result.value.data == "defend":
                 turn_log = []
                 player.defend()
@@ -173,12 +204,11 @@ try:
         if enemy.state_effects["stun"][1] > 0:
             turn_log.append(f"- {enemy.name} is stunned")
         else:
-            #enemy_attack_message = enemy.defend()
             enemy_message = enemy.take_turn(player) # TODO Enemy turn logic
             turn_log.append(f"- {enemy_message}")
 
             #check for loss condition
-            if check_for_loss(player):
+            if check_for_loss(player, enemy):
                 break
 
         time.sleep(1.5)
@@ -193,12 +223,14 @@ try:
         if enemy_refresh_message != "":
             turn_log.append(f"{enemy_refresh_message}")
         console.print(generate_game_screen(player, enemy, turn_log))
-        if check_for_loss(player) or check_for_win(enemy):
+
+        # Check for win/loss
+        if check_for_win(enemy):
+            break
+        if check_for_loss(player, enemy):
             break
 
         time.sleep(0.5)
-
-    console.print("\n[bold red]Game Over![/bold red]")
 
 except KeyboardInterrupt:
     print("\nGame exited.")

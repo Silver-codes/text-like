@@ -114,21 +114,20 @@ class Player:
             self.__mana = value
 
     def take_damage(self, damage_taken: float, spell):
-        if self.evasion < random.random(): #checks if evades
-            if self.health_percentage > PLAYER_LOW_HEALTH_THRESHOLD: #recieves smaller damage when under x% health
-                actual_damage = round(damage_taken - (self.armor + self.defend_armor_active))
-                actual_damage = max(actual_damage, 0) #actual dmg can't be negative
-                self.health -= actual_damage
-            else:
-                actual_damage = round((damage_taken * PLAYER_LOW_HEALTH_ADVANTAGE) - (self.armor + self.defend_armor_active))
-                actual_damage = max(actual_damage, 0) #actual dmg can't be negative
-                self.health -= actual_damage
-            #State effects
-            if spell.type in EFFECT_TYPES:
-                effect_damage_adjusted = round(spell.effect_damage * self.vulnerability[spell.type])
-                self.state_effects[spell.type] = [effect_damage_adjusted, spell.effect_length]
-            return actual_damage
-        return 0
+        if self.health_percentage > PLAYER_LOW_HEALTH_THRESHOLD: #recieves smaller damage when under x% health
+            actual_damage = round(damage_taken - (self.armor + self.defend_armor_active))
+            actual_damage = max(actual_damage, 0) #actual dmg can't be negative
+            self.health -= actual_damage
+        else:
+            actual_damage = round((damage_taken * PLAYER_LOW_HEALTH_ADVANTAGE) - (self.armor + self.defend_armor_active))
+            actual_damage = max(actual_damage, 0) #actual dmg can't be negative
+            self.health -= actual_damage
+        #State effects
+        if spell.type in EFFECT_TYPES:
+            effect_damage_adjusted = round(spell.effect_damage * self.vulnerability[spell.type])
+            self.state_effects[spell.type] = [effect_damage_adjusted, spell.effect_length]
+        return actual_damage
+
 
     def attack(self, enemy: Enemy):
         self.stamina -= self.attack_stamina_cost

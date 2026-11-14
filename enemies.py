@@ -5,13 +5,16 @@ from posix import stat
 from constants import (
     EFFECT_MESSAGES_ENEMY,
     EFFECT_TYPES,
+    ENEMY_UNIT7_ACTION_WEIGHTS,
     ENEMY_UNIT7_ACTIONS,
     ENEMY_UNIT7_ARMOR,
     ENEMY_UNIT7_ATTACK_MESSAGES,
     ENEMY_UNIT7_ATTACK_POWER,
+    ENEMY_UNIT7_ATTACK_STAMINA_COST,
     ENEMY_UNIT7_DEFEND_ARMOR,
     ENEMY_UNIT7_DEFEND_ARMOR_DURATION,
     ENEMY_UNIT7_DEFEND_MESSAGES,
+    ENEMY_UNIT7_DEFEND_STAMINA_COST,
     ENEMY_UNIT7_EVASION,
     ENEMY_UNIT7_HEALTH,
     ENEMY_UNIT7_HEALTH_MAX,
@@ -21,12 +24,15 @@ from constants import (
     ENEMY_UNIT7_MANA_MAX,
     ENEMY_UNIT7_MANA_REGEN,
     ENEMY_UNIT7_REST_MESSAGES,
+    ENEMY_UNIT7_SPELLS,
     ENEMY_UNIT7_STAMINA,
     ENEMY_UNIT7_STAMINA_MAX,
     ENEMY_UNIT7_STAMINA_REGEN,
     ENEMY_UNIT7_STATE_EFFECTS,
     ENEMY_UNIT7_VULNERABILITY,
     ENEMY_VULNERABILITY,
+    OFFENSIVE_ACTIONS,
+    PLAYER_EVASION_MESSAGES,
 )
 from spells import (
     ELECTRIC_PULSE,
@@ -48,7 +54,7 @@ class Enemy:
         self.health_regen = 0
 
         self.attack_power = 3
-        self.attack_stamina_cost = 8
+        self.attack_stamina_cost = 2
 
         self.__stamina = 50
         self.stamina_max = 50
@@ -71,7 +77,14 @@ class Enemy:
         self.defend_armor = 1
         self.defend_armor_active = 0
         self.defend_armor_duration = 1
+        self.defend_stamina_cost = 1
         self.actions = ["attack", "cast_spell", "defend"]
+        self.action_weights = {
+            "attack" : 1,
+            "cast_spell" : 1,
+            "defend" : 1,
+            "rest" : 1
+        }
 
     @property
     def health(self):
@@ -140,7 +153,7 @@ class Enemy:
             else:
                 damage_info = ""
             return actual_damage, damage_info, state_effects
-        return 0, "Enemy evaded the attack", {} # TODO enemy evasion comunicated to player
+        return 0, f"You missed. {self.name} evaded your attack", {}
 
     def attack(self, player):
         actual_damage = player.take_damage(self.attack_power, NO_SPELL)
@@ -161,9 +174,15 @@ class Enemy:
         return message
 
     def defend(self):
+        self.stamina -= self.defend_stamina_cost
+        # defending also regenerates a half as much as rest
+        mana_regenerated = round(self.mana_regen / 2)
+        self.mana += mana_regenerated
+        stamina_regenerated = round(self.stamina_regen / 2)
+        self.stamina += stamina_regenerated
         self.defend_armor_active = self.defend_armor
         self.state_effects["defend"] = [0, self.defend_armor_duration + 1] # plus one cause enemy defends right before refresh calls
-        return random.choice(self.defend_messages)
+        return random.choice(self.defend_messages).format(stamina=stamina_regenerated, mana=mana_regenerated)
 
     def rest(self):
         self.mana += self.mana_regen
@@ -173,7 +192,24 @@ class Enemy:
 
     # Enemy AI logic
     def take_turn(self, player):
-        action = random.choice(self.actions)
+        affordable_spells = [spell for spell in self.spells if spell.cost <= self.mana]
+        available_actions = []
+        if "attack" in self.actions and self.attack_stamina_cost <= self.stamina:
+            available_actions.append("attack")
+        if "cast_spell" in self.actions and affordable_spells:
+            available_actions.append("cast_spell")
+        if "defend" in self.actions and self.defend_stamina_cost <=self.stamina and self.state_effects["defend"][1] == 0:
+            available_actions.append("defend")
+        if not available_actions:
+            available_actions.append("rest")
+
+        weights = [self.action_weights[action] for action in available_actions]
+        action = random.choices(available_actions, weights)[0] #the first chosed
+
+        # Player evasion check
+        if action in OFFENSIVE_ACTIONS and self.player_evades(player):
+            return random.choice(PLAYER_EVASION_MESSAGES).format(name=self.name)
+
         if action == "attack":
             message = self.attack(player)
         elif action == "cast_spell":
@@ -183,21 +219,28 @@ class Enemy:
             message = self.defend()
         elif action == "rest":
             message = self.rest()
+        else:
+            raise ValueError(f"ENEMY CHOSE {action} UNEXPECTEDLY.")
         return message
 
+    def player_evades(self, player) -> bool:
+        return random.random() < player.evasion
+
     def refresh(self): #actions that happen at the end of every round
+        message = ""
         # Regeneration
         if self.health < self.health_max:
             self.health += self.health_regen
+            if self.health_regen != 0:
+                message += f"{self.name} regenerated {self.health_regen}hp. "
 
         # State effects (burn, poison)
-        message = ""
         for effect, (damage, duration) in self.state_effects.items():
                 if duration <= 0:
                     continue
                 self.health -= damage
                 if effect in EFFECT_MESSAGES_ENEMY:
-                    message += EFFECT_MESSAGES_ENEMY[effect].format(damage=damage)
+                    message += EFFECT_MESSAGES_ENEMY[effect].format(name=self.name,damage=damage)
                 self.state_effects[effect][1] -= 1
         if self.state_effects["defend"] == [0, 0]:
             self.defend_armor_active = 0
@@ -215,13 +258,14 @@ class Enemy_Unit7(Enemy):
         self.health_regen = ENEMY_UNIT7_HEALTH_REGEN
 
         self.attack_power = ENEMY_UNIT7_ATTACK_POWER
+        self.attack_stamina_cost = ENEMY_UNIT7_ATTACK_STAMINA_COST
 
         self.stamina_max = ENEMY_UNIT7_STAMINA_MAX
         self.stamina = ENEMY_UNIT7_STAMINA
         self.stamina_regen = ENEMY_UNIT7_STAMINA_REGEN
 
         self.magic_power = ENEMY_UNIT7_MAGICK_POWER
-        self.spells: list[Spell] = [FIREBALL, FROST_BEAM, ELECTRIC_PULSE, POISON_SPIKE]
+        self.spells: list[Spell] = ENEMY_UNIT7_SPELLS
         self.mana_max = ENEMY_UNIT7_MANA_MAX
         self.mana = ENEMY_UNIT7_MANA
         self.mana_regen = ENEMY_UNIT7_MANA_REGEN
@@ -232,6 +276,7 @@ class Enemy_Unit7(Enemy):
         self.defend_armor = ENEMY_UNIT7_DEFEND_ARMOR
         self.defend_armor_active = 0
         self.defend_armor_duration = ENEMY_UNIT7_DEFEND_ARMOR_DURATION
+        self.defend_stamina_cost = ENEMY_UNIT7_DEFEND_STAMINA_COST
 
         self.vulnerability = ENEMY_UNIT7_VULNERABILITY
 
@@ -244,3 +289,4 @@ class Enemy_Unit7(Enemy):
         self.rest_messages = ENEMY_UNIT7_REST_MESSAGES
 
         self.actions = ENEMY_UNIT7_ACTIONS
+        self.action_weights = ENEMY_UNIT7_ACTION_WEIGHTS
