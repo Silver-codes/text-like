@@ -80,7 +80,7 @@ def state_emojis(unit):
     return " ".join(active)
 
 player = Player()
-enemy = Enemy_Unit7()
+enemy = EnemyUnit7()
 turn_log = []
 
 def generate_game_screen(player, enemy, turn_log) -> Panel:

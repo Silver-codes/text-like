@@ -27,7 +27,6 @@ from spells import (
     ELECTRIC_PULSE,
     FIREBALL,
     FROST_BEAM,
-    NO_SPELL,
     POISON_SPIKE,
     SPELL_CAST_MESSAGES_PLAYER,
     STUN,
