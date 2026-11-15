@@ -1,6 +1,5 @@
 import copy
 import random
-from math import log
 
 from constants import (
     EFFECT_MESSAGES_PLAYER,
@@ -8,19 +7,6 @@ from constants import (
     PLAYER_ATTACK_MESSAGES,
     PLAYER_LOW_HEALTH_ADVANTAGE,
     PLAYER_LOW_HEALTH_THRESHOLD,
-    PLAYER_STARTING_ARMOR,
-    PLAYER_STARTING_ATTACK_POWER,
-    PLAYER_STARTING_ATTACK_STAMINA_COST,
-    PLAYER_STARTING_DEFEND_ARMOR,
-    PLAYER_STARTING_DEFEND_ARMOR_DURATION,
-    PLAYER_STARTING_EVASION,
-    PLAYER_STARTING_HEALTH,
-    PLAYER_STARTING_MAGICK_POWER,
-    PLAYER_STARTING_MANA,
-    PLAYER_STARTING_MANA_REGEN,
-    PLAYER_STARTING_STAMINA,
-    PLAYER_STARTING_STAMINA_REGEN,
-    PLAYER_STARTING_VULNERABILITY,
 )
 from enemies import Enemy
 from spells import (
@@ -28,42 +14,53 @@ from spells import (
     FIREBALL,
     FROST_BEAM,
     POISON_SPIKE,
+    SEPMRA_SECTUM,
     SPELL_CAST_MESSAGES_PLAYER,
     STUN,
     Spell,
 )
+from weapons import FISTS, WEAPON_ATTACK_MESSAGES
 
 
 class Player:
     def __init__(self) -> None:
+        self.name = "Player"
 
-        self.__health = PLAYER_STARTING_HEALTH
-        self.health_max = PLAYER_STARTING_HEALTH
+        self.__health = 50
+        self.health_max = 50
 
-        self.attack_power = PLAYER_STARTING_ATTACK_POWER
-        self.attack_power_max = PLAYER_STARTING_ATTACK_POWER
-        self.attack_stamina_cost = PLAYER_STARTING_ATTACK_STAMINA_COST
+        self.weapon = FISTS
+        self.strenght = 1 # is multiplied by
+        self.strenght_max = 1
 
-        self.__stamina = PLAYER_STARTING_STAMINA
-        self.stamina_max = PLAYER_STARTING_STAMINA
-        self.stamina_regen = PLAYER_STARTING_STAMINA_REGEN
+        self.__stamina = 50
+        self.stamina_max = 50
+        self.stamina_regen = 1
 
-        self.magic_power = PLAYER_STARTING_MAGICK_POWER
-        self.spells: list[Spell] = [FIREBALL, FROST_BEAM, ELECTRIC_PULSE, POISON_SPIKE, STUN]
-        self.__mana = PLAYER_STARTING_MANA
-        self.mana_max = PLAYER_STARTING_MANA
-        self.mana_regen = PLAYER_STARTING_MANA_REGEN
+        self.magic_power = 1 # is multiplied by
+        self.spells: list[Spell] = [FIREBALL, FROST_BEAM, ELECTRIC_PULSE, POISON_SPIKE, SEPMRA_SECTUM, STUN]
+        self.__mana = 25
+        self.mana_max = 25
+        self.mana_regen = 1
 
-        self.evasion = PLAYER_STARTING_EVASION
-        self.evasion_max = PLAYER_STARTING_EVASION
+        self.evasion = 0.01
+        self.evasion_max = 0.01
 
-        self.armor = PLAYER_STARTING_ARMOR
-        self.armor_max = PLAYER_STARTING_ARMOR
-        self.defend_armor = PLAYER_STARTING_DEFEND_ARMOR
-        self.defend_armor_active = 0
-        self.defend_armor_duration = PLAYER_STARTING_DEFEND_ARMOR_DURATION
+        self.armor = 0.0
+        self.armor_max = 0.0
+        self.defend_armor = 1
+        self.defend_armor_active = 0 #active at the moment. Adds defend_armor when activated
+        self.defend_armor_duration = 1
 
-        self.vulnerability = PLAYER_STARTING_VULNERABILITY
+        self.vulnerability = {
+            "normal" : 1.0,
+            "fire" : 1.0,
+            "ice" : 1.0,
+            "electric" : 1.0,
+            "bleed" : 1.0,
+            "poison" : 1.0,
+            "stun" : 1.0
+        }
 
         self.state_effects = self.state_effects = {effect: [0, 0] for effect in EFFECT_TYPES} # shows state effects - [dmg, num_rounds_left]
         # for defend its [0, num_rounds left], dmg reduced by defend set in self.defend_armor
@@ -114,6 +111,15 @@ class Player:
         else:
             self.__mana = value
 
+    @property
+    def attack_power(self):
+        return self.strenght * self.weapon.damage
+
+    @property
+    def attack_stamina_cost(self):
+        return self.weapon.cost
+
+
     def take_damage(self, damage_taken: float):
         if self.health_percentage > PLAYER_LOW_HEALTH_THRESHOLD: #recieves smaller damage when under x% health
             actual_damage = round(damage_taken - (self.armor + self.defend_armor_active))
@@ -127,7 +133,7 @@ class Player:
 
 
     def attack(self, enemy: Enemy):
-        self.stamina -= self.attack_stamina_cost
+        self.stamina -= self.weapon.cost
 
         #Evasion check
         if self.enemy_evades(enemy):
@@ -135,7 +141,7 @@ class Player:
             return message
 
         actual_damage = enemy.take_damage(self.attack_power)
-        message = random.choice(PLAYER_ATTACK_MESSAGES).format(enemy=enemy.name, damage=actual_damage)
+        message = random.choice(WEAPON_ATTACK_MESSAGES[self.weapon]).format(enemy=enemy.name, damage=actual_damage)
         return message
 
     def cast_spell(self, enemy, spell) -> str:

@@ -1,3 +1,4 @@
+from math import remainder
 import random
 import time
 
@@ -13,7 +14,7 @@ from rich.table import Table
 from rich.text import Text
 
 from clear_screen import clear_screen
-from constants import EFFECT_EMOJIS, LOST_BATTLE_MESSAGES, WON_BATTLE_MESSAGES
+from constants import CREEPY_MESSAGE_CHANCE, CREEPY_MESSAGES, EFFECT_EMOJIS, LOST_BATTLE_MESSAGES, WON_BATTLE_MESSAGES
 from enemies import EnemyUnit7
 from player import Player
 
@@ -52,8 +53,9 @@ def generate_loss_screen(enemy):
 
 def check_for_win(player, enemy, console, turn_log):
     if enemy.health <= 0:
+        creepy_message = ""
         console.clear()
-        console.print(generate_game_screen(player, enemy, turn_log))
+        console.print(generate_game_screen(player, enemy, turn_log, creepy_message))
         console.print(generate_win_screen(enemy))
         time.sleep(5.0)
         return True
@@ -61,8 +63,9 @@ def check_for_win(player, enemy, console, turn_log):
 
 def check_for_loss(player, enemy, console, turn_log):
     if player.health <= 0:
+        creepy_message = ""
         console.clear()
-        console.print(generate_game_screen(player, enemy, turn_log))
+        console.print(generate_game_screen(player, enemy, turn_log, creepy_message))
         console.print(generate_loss_screen(enemy))
         time.sleep(5.0)
         return True
@@ -75,40 +78,58 @@ def state_emojis(unit):
             active.append(EFFECT_EMOJIS[effect])
     return " ".join(active)
 
+def render_bar(current, max):
+    length = 20
+    blocks = [" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█"]
+    total_steps = length * 8
+    filled_steps = round((current / max) * total_steps)
+    full_blocks = filled_steps // 8
+    remaining_blocks = filled_steps % 8
+    bar = "█" * full_blocks
+    if full_blocks < length:
+            bar += blocks[remaining_blocks]
+            bar += " " * (length - full_blocks - 1)
+    return f"|{bar}|"
 
-def generate_game_screen(player, enemy, turn_log) -> Panel:
+
+
+def generate_game_screen(player, enemy, turn_log, creepy_message) -> Panel:
     #UI of the game screen
     content_player = Text(justify = "center")
-    content_player.append("Player\n", style="bold green")
-    content_player.append(f"Player HP: {player.health}/{player.health_max}\n", style="red" if player.health > player.health_max * 0.25 else "bold red")
-    content_player.append(f"Player Stamina: {player.stamina}/{player.stamina_max}\n", style="green" if player.health > player.health_max * 0.25 else "bold red")
-    content_player.append(f"Player Mana: {player.mana}/{player.mana_max}\n", style="blue" if player.health > player.health_max * 0.25 else "bold red")
-
-    content_player.append(Text.from_markup(state_emojis(player)))
+    content_player.append(f"{player.name}\n", style="bold green")
+    content_player.append(f"{Text.from_markup(state_emojis(player))}\n")
+    content_player.append(f"     HP:{render_bar(player.health, player.health_max)} {player.health}/{player.health_max}\n", style="red" if player.health > player.health_max * 0.25 else "bold red")
+    content_player.append(f"Stamina:{render_bar(player.stamina, player.stamina_max)} {player.stamina}/{player.stamina_max}\n", style="green")
+    content_player.append(f"   Mana:{render_bar(player.mana, player.mana_max)} {player.mana}/{player.mana_max}\n", style="blue")
 
     action_text = Text(justify = "left")
     for message in turn_log:
             action_text.append(message + "\n")
 
-
     content_enemy = Text(justify = "center")
-    content_enemy.append(f"{enemy.name}\n", style="bold red")
-    content_enemy.append(f"Enemy HP: {enemy.health}/{enemy.health_max}\n")
-    content_enemy.append(f"Revivals: {enemy.revivals}\n")
+    content_enemy.append(f"{enemy.name}", style="bold red")
+    content_enemy.append(f" | Revivals: {'N/A' if enemy.revivals is None else enemy.revivals}\n")
+    content_enemy.append(f"{Text.from_markup(state_emojis(enemy))}\n")
+    content_enemy.append(f"HP:{render_bar(enemy.health, enemy.health_max)} {enemy.health}/{enemy.health_max}\n")
+
 
     ##TEMP##
     content_enemy.append(f"TEMP enemy Stamina: {enemy.stamina}/{enemy.stamina_max}\n")
     content_enemy.append(f"TEMP enemy Mana: {enemy.mana}/{enemy.mana_max}\n")
     ##TEMP##
 
-    content_enemy.append(Text.from_markup(state_emojis(enemy)))
+    creepy_text = Text(justify = "right")
+    creepy_text.append(creepy_message, style="italic red")
 
     table = Table.grid(expand=True)
     table.add_column(justify = "left", ratio=1)
     table.add_column(justify = "right", ratio=1)
     table.add_row(content_player, content_enemy)
 
-    layout = Group(table, action_text)
+    if creepy_text:
+        layout = Group(table, action_text, creepy_text)
+    else:
+        layout = Group(table, action_text)
 
     return Panel(layout, title="[bold yellow]Stage placeholder (eg. 1st Floor)[/bold yellow]", border_style="blue")
 
@@ -119,6 +140,7 @@ def battle(player, enemy):
     console = Console()
     clear_screen()
     turn_log = []
+    creepy_message = ""
 
     #Add back option to Cast Menu
     cast_menu = [Choice(f"{spell.name} ({spell.cost} mana)", data = spell) for spell in player.spells]
@@ -131,7 +153,7 @@ def battle(player, enemy):
     try:
         while True:
             console.clear()
-            console.print(generate_game_screen(player, enemy, turn_log))
+            console.print(generate_game_screen(player, enemy, turn_log, creepy_message))
 
             if player.state_effects["stun"][1] > 0:
                 turn_log = []
@@ -185,13 +207,13 @@ def battle(player, enemy):
                     player.defend()
                     turn_log.append("- You prepare for an attack")
 
-
+            creepy_message = ""
             #check for win condition
             if check_for_win(player, enemy, console, turn_log):
                 return True
 
             console.clear()
-            console.print(generate_game_screen(player, enemy, turn_log))
+            console.print(generate_game_screen(player, enemy, turn_log, creepy_message))
 
             if enemy.state_effects["stun"][1] > 0:
                 turn_log.append(f"- {enemy.name} is stunned")
@@ -202,6 +224,7 @@ def battle(player, enemy):
                 #check for loss condition
                 if check_for_loss(player, enemy, console, turn_log):
                     return False
+
 
             time.sleep(1.5)
             console.clear()
@@ -214,13 +237,19 @@ def battle(player, enemy):
                 turn_log.append(f"{player_refresh_message}")
             if enemy_refresh_message != "":
                 turn_log.append(f"{enemy_refresh_message}")
-            console.print(generate_game_screen(player, enemy, turn_log))
+
+
+            if random.random() <= CREEPY_MESSAGE_CHANCE:
+                creepy_message = random.choice(CREEPY_MESSAGES)
+
+            console.print(generate_game_screen(player, enemy, turn_log, creepy_message))
 
             # Check for win/loss
             if check_for_win(player, enemy, console, turn_log):
                 return True
             if check_for_loss(player, enemy, console, turn_log):
                 return False
+
 
             time.sleep(0.5)
 

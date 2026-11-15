@@ -20,10 +20,11 @@ EFFECT_MESSAGES_ENEMY = {
     "stun": "{name} is stunned.",
 }
 
-EFFECT_TYPES = ("fire", "poison", "stun", "defend")
+EFFECT_TYPES = ("fire", "poison", "bleed", "stun", "defend")
 EFFECT_EMOJIS = {
     "fire": ":fire:",
     "poison": ":skull_and_crossbones:",
+    "bleed": ":drop_of_blood:",
     "stun": ":dizzy:",
     "defend": ":shield:",
 }
@@ -56,34 +57,19 @@ WON_BATTLE_MESSAGES = [
     "You bested {name}."
 ]
 
-### Player starting stats ###
-PLAYER_STARTING_HEALTH = 50
+CREEPY_MESSAGE_CHANCE = 0.002
+CREEPY_MESSAGES = [
+    "the camera is watching",
+    "they are watching",
+    "freedom is out of reach",
+    "you hear distant laughter",
+    "you notice a strange door",
+    "how long have you been here?",
+    "you don't remember",
+    "you feel eyes watching"
+]
 
-PLAYER_STARTING_ATTACK_POWER = 3
-PLAYER_STARTING_ATTACK_STAMINA_COST = 5
-
-PLAYER_STARTING_MAGICK_POWER = 1
-PLAYER_STARTING_MANA = 25
-PLAYER_STARTING_MANA_REGEN = 1
-
-PLAYER_STARTING_STAMINA = 50
-PLAYER_STARTING_STAMINA_REGEN = 1
-
-PLAYER_STARTING_EVASION = 0.01
-
-PLAYER_STARTING_ARMOR = 0.0
-PLAYER_STARTING_DEFEND_ARMOR = 1
-PLAYER_STARTING_DEFEND_ARMOR_DURATION = 1
-
-PLAYER_STARTING_VULNERABILITY = {
-    "normal" : 1.0,
-    "fire" : 1.0,
-    "ice" : 1.0,
-    "electric" : 1.0,
-    "bleed" : 1.0,
-    "poison" : 1.0,
-    "stun" : 1
-}
+### Player stats ###
 
 PLAYER_LOW_HEALTH_THRESHOLD = 20 #at what % of health is damage taken lower
 PLAYER_LOW_HEALTH_ADVANTAGE = 0.66 #damage taken when under threshold - MUST BE ABOVE 0.5
