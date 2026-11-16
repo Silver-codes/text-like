@@ -20,6 +20,7 @@ from spells import (
 class Enemy:
     name = "Test Enemy"
     revivals: int | None = 10
+    num_defeated = 0
 
     health_max = 20
     health_regen = 0

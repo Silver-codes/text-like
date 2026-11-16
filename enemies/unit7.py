@@ -1,12 +1,16 @@
 ####################   1 Unit 7-Null   ####################
-from constants import EFFECT_TYPES
+from inquirer_textual import prompts
+
+from constants import EFFECT_TYPES, TEXT_SPEED_FAST, TEXT_SPEED_MEDIUM, TEXT_SPEED_SLOW
 from enemies.base_enemy import Enemy
-from spells import FIREBALL, SPARK, Spell
+from spells import SPARK, Spell
+from write_on import write_on
 
 
 class EnemyUnit7(Enemy):
     name = "Unit 7-Null"
     revivals = None
+    num_defeated = 0
 
     health_max = 120
     health_regen = 0
@@ -79,3 +83,20 @@ class EnemyUnit7(Enemy):
             "Unit 7-Null twitches and accidentally avoids your attack.",
             "Unit 7-Null's spastic movement causes you to miss."
         ]
+
+        self.intro_sequence_texts = [
+            """
+You hear robotic movement somewhere in the dark ahead of you. Slow clunky irregular steps, wiring sounds,
+small electro-motors steadily closing in on your location.\n
+Then you see it.\n
+[red]A faint red light pulsing.[/red]\n
+It's metallic humanoid body slowly emerges from the darkness, lighting its way by a small red LED in a place where eyes would normally reside.\n
+Across its chestplate you read red indentet text. [bold red]Unit 7-Null[/bold red].
+There's one more thing to read. Bolted to its upper left chest is a small plastic ID tag reads: Tobias Wyrick."""
+        ]
+
+    def intro_sequence(self):
+        text_num = max(self.num_defeated, len(self.intro_sequence_texts) - 1)
+        if text_num == 0:
+            write_on(self.intro_sequence_texts[text_num], TEXT_SPEED_MEDIUM, None)
+            prompts.wait_for_key("Press Enter to continue...", key='enter')

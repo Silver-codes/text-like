@@ -78,11 +78,11 @@ def state_emojis(unit):
             active.append(EFFECT_EMOJIS[effect])
     return " ".join(active)
 
-def render_bar(current, max): # TODO - when values between health/mana/stamina differ too much, they become not aligned
+def render_bar(current, maximum):
     length = 20
     blocks = [" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█"]
     total_steps = length * 8
-    filled_steps = round((current / max) * total_steps)
+    filled_steps = round((current / maximum) * total_steps)
     full_blocks = filled_steps // 8
     remaining_blocks = filled_steps % 8
     bar = "█" * full_blocks
@@ -94,7 +94,7 @@ def render_bar(current, max): # TODO - when values between health/mana/stamina d
 def stat_line(label: str, current, maximum) -> str:
     current, maximum = round(current), round(maximum)
     numbers = f"{current}/{maximum}"
-    return f"{label:>8}{render_bar(current, maximum)} {numbers:>7}\n"
+    return f"{label:>8}{render_bar(current, maximum)}{numbers:>8}\n" #change numbers max size from 7 to 9 if stats actually get over 999
 
 def generate_game_screen(player, enemy, turn_log, creepy_message) -> Panel:
     #UI of the game screen
@@ -266,4 +266,5 @@ if __name__ == "__main__":
     from player import Player
     player = Player()
     enemy = EnemyUnit7()
+    enemy.intro_sequence()
     battle(player, enemy)
