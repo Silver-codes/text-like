@@ -1,14 +1,14 @@
 ####################   1 Unit 7-Null   ####################
 from constants import EFFECT_TYPES
 from enemies.base_enemy import Enemy
-from spells import FIREBALL, Spell
+from spells import FIREBALL, SPARK, Spell
 
 
 class EnemyUnit7(Enemy):
     name = "Unit 7-Null"
     revivals = None
 
-    health_max = 12
+    health_max = 120
     health_regen = 0
 
     attack_power = 3
@@ -34,7 +34,7 @@ class EnemyUnit7(Enemy):
         self.defend_armor_active = 0
         self.is_stunned = False
 
-        self.spells: list[Spell] = [FIREBALL]
+        self.spells: list[Spell] = [SPARK]
 
         self.vulnerability = {
             "normal" : 1.0,
@@ -57,21 +57,21 @@ class EnemyUnit7(Enemy):
         }
 
         self.attack_messages = [
-            "Unit 7-Null slashes you for {damage} dmg",
-            "Unit 7-Null falls onto you for {damage} dmg",
-            "Unit 7-Null throws a rock at you for {damage} dmg"
+            "Unit 7-Null slashes you for {damage} dmg.",
+            "Unit 7-Null falls onto you for {damage} dmg.",
+            "Unit 7-Null throws a rock at you for {damage} dmg."
         ]
 
         self.defend_messages = [
-            "Unit 7-Null braces for impact. +{stamina} stamina, +{mana} energy",
-            "Unit 7-Null curls in a ball. +{stamina} stamina, +{mana} energy",
-            "Unit 7-Null covers. +{stamina} stamina, +{mana} energy"
+            "Unit 7-Null braces for impact. +{stamina} stamina, +{mana} energy.",
+            "Unit 7-Null curls in a ball. +{stamina} stamina, +{mana} energy.",
+            "Unit 7-Null covers. +{stamina} stamina, +{mana} energy."
         ]
 
         self.rest_messages = [
-            "Unit 7-Null is out of power. +{stamina} stamina, +{mana} energy",
-            "Unit 7-Null is regaining power. +{stamina} stamina, +{mana} energy",
-            "Unit 7-Null needs maintenance. +{stamina} stamina, +{mana} energy"
+            "Unit 7-Null is out of power. +{stamina} stamina, +{mana} energy.",
+            "Unit 7-Null is regaining power. +{stamina} stamina, +{mana} energy.",
+            "Unit 7-Null needs maintenance. +{stamina} stamina, +{mana} energy."
         ]
 
         self.evade_messages = [

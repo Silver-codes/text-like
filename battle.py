@@ -78,7 +78,7 @@ def state_emojis(unit):
             active.append(EFFECT_EMOJIS[effect])
     return " ".join(active)
 
-def render_bar(current, max):
+def render_bar(current, max): # TODO - when values between health/mana/stamina differ too much, they become not aligned
     length = 20
     blocks = [" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█"]
     total_steps = length * 8
@@ -91,16 +91,20 @@ def render_bar(current, max):
             bar += " " * (length - full_blocks - 1)
     return f"|{bar}|"
 
-
+def stat_line(label: str, current, maximum) -> str:
+    current, maximum = round(current), round(maximum)
+    numbers = f"{current}/{maximum}"
+    return f"{label:>8}{render_bar(current, maximum)} {numbers:>7}\n"
 
 def generate_game_screen(player, enemy, turn_log, creepy_message) -> Panel:
     #UI of the game screen
     content_player = Text(justify = "center")
     content_player.append(f"{player.name}\n", style="bold green")
     content_player.append(f"{Text.from_markup(state_emojis(player))}\n")
-    content_player.append(f"     HP:{render_bar(player.health, player.health_max)} {player.health}/{player.health_max}\n", style="red" if player.health > player.health_max * 0.25 else "bold red")
-    content_player.append(f"Stamina:{render_bar(player.stamina, player.stamina_max)} {player.stamina}/{player.stamina_max}\n", style="green")
-    content_player.append(f"   Mana:{render_bar(player.mana, player.mana_max)} {player.mana}/{player.mana_max}\n", style="blue")
+    content_player.append(stat_line("HP:", player.health, player.health_max),
+                          style="red" if player.health > player.health_max * 0.25 else "bold red")
+    content_player.append(stat_line("Stamina:", player.stamina, player.stamina_max), style="green")
+    content_player.append(stat_line("Mana:", player.mana, player.mana_max), style="blue")
 
     action_text = Text(justify = "left")
     for message in turn_log:
@@ -110,7 +114,7 @@ def generate_game_screen(player, enemy, turn_log, creepy_message) -> Panel:
     content_enemy.append(f"{enemy.name}", style="bold red")
     content_enemy.append(f" | Revivals: {'N/A' if enemy.revivals is None else enemy.revivals}\n")
     content_enemy.append(f"{Text.from_markup(state_emojis(enemy))}\n")
-    content_enemy.append(f"HP:{render_bar(enemy.health, enemy.health_max)} {enemy.health}/{enemy.health_max}\n")
+    content_enemy.append(stat_line("HP:", enemy.health, enemy.health_max))
 
 
     ##TEMP##

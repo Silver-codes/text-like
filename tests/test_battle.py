@@ -195,7 +195,7 @@ try:
         if enemy.state_effects["stun"][1] > 0:
             turn_log.append(f"- {enemy.name} is stunned")
         else:
-            enemy_message = enemy.take_turn(player) # TODO Enemy turn logic
+            enemy_message = enemy.take_turn(player)
             turn_log.append(f"- {enemy_message}")
 
             #check for loss condition

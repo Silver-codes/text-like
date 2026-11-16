@@ -17,13 +17,14 @@ EFFECT_MESSAGES_PLAYER = {
 EFFECT_MESSAGES_ENEMY = {
     "fire": "{name} burns for {damage} dmg.",
     "poison": "{name} is poisoned for {damage} dmg.",
+    "bleed" : "{name} bleeds for {damage} dmg.",
     "stun": "{name} is stunned.",
 }
 
 EFFECT_TYPES = ("fire", "poison", "bleed", "stun", "defend")
 EFFECT_EMOJIS = {
     "fire": ":fire:",
-    "poison": ":skull_and_crossbones:",
+    "poison": ":skull:",
     "bleed": ":drop_of_blood:",
     "stun": ":dizzy:",
     "defend": ":shield:",

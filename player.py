@@ -4,7 +4,6 @@ import random
 from constants import (
     EFFECT_MESSAGES_PLAYER,
     EFFECT_TYPES,
-    PLAYER_ATTACK_MESSAGES,
     PLAYER_LOW_HEALTH_ADVANTAGE,
     PLAYER_LOW_HEALTH_THRESHOLD,
 )
@@ -13,10 +12,13 @@ from spells import (
     ELECTRIC_PULSE,
     FIREBALL,
     FROST_BEAM,
+    POISON_DART,
     POISON_SPIKE,
-    SEPMRA_SECTUM,
+    SEMPRA_SECTUM,
+    SPARK,
     SPELL_CAST_MESSAGES_PLAYER,
     STUN,
+    TELEKINESIS,
     Spell,
 )
 from weapons import FISTS, WEAPON_ATTACK_MESSAGES
@@ -30,15 +32,15 @@ class Player:
         self.health_max = 50
 
         self.weapon = FISTS
-        self.strenght = 1 # is multiplied by
-        self.strenght_max = 1
+        self.strength = 1 # is multiplied by
+        self.strength_max = 1
 
         self.__stamina = 50
         self.stamina_max = 50
         self.stamina_regen = 1
 
         self.magic_power = 1 # is multiplied by
-        self.spells: list[Spell] = [FIREBALL, FROST_BEAM, ELECTRIC_PULSE, POISON_SPIKE, SEPMRA_SECTUM, STUN]
+        self.spells: list[Spell] = [SPARK, POISON_DART, TELEKINESIS]
         self.__mana = 25
         self.mana_max = 25
         self.mana_regen = 1
@@ -113,7 +115,7 @@ class Player:
 
     @property
     def attack_power(self):
-        return self.strenght * self.weapon.damage
+        return self.strength * self.weapon.damage
 
     @property
     def attack_stamina_cost(self):
@@ -133,15 +135,24 @@ class Player:
 
 
     def attack(self, enemy: Enemy):
-        self.stamina -= self.weapon.cost
+        self.stamina -= self.attack_stamina_cost
 
         #Evasion check
         if self.enemy_evades(enemy):
             message = random.choice(enemy.evade_messages)
             return message
 
-        actual_damage = enemy.take_damage(self.attack_power)
+        adjusted_attack_power = self.attack_power * enemy.vulnerability[self.weapon.type]
+        actual_damage = enemy.take_damage(adjusted_attack_power)
         message = random.choice(WEAPON_ATTACK_MESSAGES[self.weapon]).format(enemy=enemy.name, damage=actual_damage)
+
+        if enemy.vulnerability[self.weapon.type] > 1:
+            message += " Critical hit!"
+        elif enemy.vulnerability[self.weapon.type] < 0.9:
+            message += " Not very effective..."
+        else:
+            message += ""
+
         return message
 
     def cast_spell(self, enemy, spell) -> str:
@@ -154,6 +165,7 @@ class Player:
 
         spell_adjusted = copy.deepcopy(spell)
         spell_adjusted.damage *= self.magic_power
+        spell_adjusted.damage *= enemy.vulnerability[spell.type]
         spell_adjusted.damage = round(spell_adjusted.damage)
         spell_adjusted.effect_damage *= self.magic_power
         spell_adjusted.effect_damage = round(spell_adjusted.effect_damage)
@@ -168,9 +180,9 @@ class Player:
         enemy.state_effects.update(state_effects) #.update on empty list does nothing, so it's safe to use
 
         #Vulnerability message
-        if self.vulnerability[spell.type] > 1:
+        if enemy.vulnerability[spell.type] > 1:
             message += " Critical hit!"
-        elif self.vulnerability[spell.type] < 0.9:
+        elif enemy.vulnerability[spell.type] < 0.9:
             message += " Not very effective..."
         else:
             message += ""
