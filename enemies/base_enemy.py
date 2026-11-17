@@ -7,6 +7,7 @@ from constants import (
     EFFECT_TYPES,
     OFFENSIVE_ACTIONS,
     PLAYER_EVASION_MESSAGES,
+    TEXT_SPEED_MEDIUM,
 )
 from spells import (
     ELECTRIC_PULSE,
@@ -15,6 +16,7 @@ from spells import (
     POISON_SPIKE,
     Spell,
 )
+from write_on import write_on
 
 
 class Enemy:
@@ -75,6 +77,7 @@ class Enemy:
             "defend" : 1,
             "rest" : 1
         }
+        self.intro_sequence_texts = ["Base enemy approaches for the first time", "Base enemy approached before"]
 
     @property
     def health(self):
@@ -229,3 +232,12 @@ class Enemy:
         if self.state_effects["defend"] == [0, 0]:
             self.defend_armor_active = 0
         return message
+
+    def intro_sequence(self):
+        if self.num_defeated != 0:
+            chosen_line_num = random.randint(1, len(self.intro_sequence_texts) - 1)
+            write_on(self.intro_sequence_texts[chosen_line_num], TEXT_SPEED_MEDIUM, None)
+            input("Press Enter to continue...")
+        elif self.num_defeated == 0:
+            write_on(self.intro_sequence_texts[0], TEXT_SPEED_MEDIUM, None)
+            input("Press Enter to continue...")

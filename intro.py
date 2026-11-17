@@ -33,4 +33,4 @@ def intro_sequence():
     print()
     write_on(text10, TEXT_SPEED_MEDIUM, "italic")
     print()
-    prompts.wait_for_key("Press Enter to continue...", key='enter')
+    input("Press Enter to continue...")

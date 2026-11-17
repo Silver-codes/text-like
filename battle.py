@@ -1,6 +1,6 @@
-from math import remainder
 import random
 import time
+from math import remainder
 
 from inquirer_textual import prompts
 from inquirer_textual.common.Choice import Choice
@@ -14,7 +14,13 @@ from rich.table import Table
 from rich.text import Text
 
 from clear_screen import clear_screen
-from constants import CREEPY_MESSAGE_CHANCE, CREEPY_MESSAGES, EFFECT_EMOJIS, LOST_BATTLE_MESSAGES, WON_BATTLE_MESSAGES
+from constants import (
+    CREEPY_MESSAGE_CHANCE,
+    CREEPY_MESSAGES,
+    EFFECT_EMOJIS,
+    LOST_BATTLE_MESSAGES,
+    WON_BATTLE_MESSAGES,
+)
 from enemies import EnemyUnit7
 from player import Player
 
@@ -153,6 +159,7 @@ def battle(player, enemy):
     else:
         cast_menu.append(Choice("Back", data = "back"))
 
+
     # Main Battle lopp
     try:
         while True:
@@ -167,6 +174,7 @@ def battle(player, enemy):
                 result = select_menu([
                                     Choice(f"Attack ({player.attack_stamina_cost} stamina)", data="attack"),
                                     Choice('Cast', data="cast"),
+                                    Choice('Items', data="items"),
                                     Choice('Defend', data="defend"),
                                     Choice('Forfeit', data="exit")],
                                         settings=PromptSettings(mandatory=False))
@@ -204,6 +212,25 @@ def battle(player, enemy):
                         continue
                     turn_log = []
                     message = player.cast_spell(enemy, spell)
+                    turn_log.append(f"- {message}")
+
+                #Item usage
+                elif result.value.data == "items":
+
+                    #Creates or refreshes Items Menu
+                    items_menu = [Choice(f"{item.name} - {item.description}. ({player.items[item]}x)", data = item) for item in player.items]
+                    if items_menu == []:
+                        items_menu.append(Choice("Back (You have no items)", data = "back"))
+                    else:
+                        items_menu.append(Choice("Back", data = "back"))
+
+                    item_used = select_menu(items_menu,
+                                            settings=PromptSettings(mandatory=False))
+                    if item_used.value.data == "back":
+                        continue
+                    item = item_used.value.data
+                    turn_log = []
+                    message = player.use_item(item, enemy)
                     turn_log.append(f"- {message}")
 
                 elif result.value.data == "defend":
@@ -266,5 +293,4 @@ if __name__ == "__main__":
     from player import Player
     player = Player()
     enemy = EnemyUnit7()
-    enemy.intro_sequence()
     battle(player, enemy)

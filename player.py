@@ -8,6 +8,7 @@ from constants import (
     PLAYER_LOW_HEALTH_THRESHOLD,
 )
 from enemies import Enemy
+from items.restore_items import HEALTH_SYRINGE, MANA_NANOBOTS, STAMINA_CARTRIDGE
 from spells import (
     ELECTRIC_PULSE,
     FIREBALL,
@@ -66,6 +67,12 @@ class Player:
 
         self.state_effects = self.state_effects = {effect: [0, 0] for effect in EFFECT_TYPES} # shows state effects - [dmg, num_rounds_left]
         # for defend its [0, num_rounds left], dmg reduced by defend set in self.defend_armor
+
+        self.items = {
+            HEALTH_SYRINGE : 3,
+            STAMINA_CARTRIDGE : 4,
+            MANA_NANOBOTS : 2
+        }
 
 
     @property
@@ -188,6 +195,15 @@ class Player:
             message += ""
 
         return message
+
+    def use_item(self, item, enemy) -> str:
+            if self.items.get(item, 0) <= 0:
+                return f"You don't have any {item.name}."
+            message = item.use(self, enemy)
+            self.items[item] -= 1
+            if self.items[item] == 0:
+                del self.items[item]
+            return message
 
     def defend(self):
         self.defend_armor_active = self.defend_armor
