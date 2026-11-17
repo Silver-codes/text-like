@@ -33,4 +33,4 @@ def intro_sequence():
     print()
     write_on(text10, TEXT_SPEED_MEDIUM, "italic")
     print()
-    input("Press Enter to continue...")
+    input(">> PRESS [ENTER] TO CONTINUE <<")

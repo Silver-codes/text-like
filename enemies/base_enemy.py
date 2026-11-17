@@ -1,5 +1,6 @@
 import copy
 import random
+import time
 from posix import stat
 
 from constants import (
@@ -78,6 +79,7 @@ class Enemy:
             "rest" : 1
         }
         self.intro_sequence_texts = ["Base enemy approaches for the first time", "Base enemy approached before"]
+
 
     @property
     def health(self):
@@ -237,7 +239,13 @@ class Enemy:
         if self.num_defeated != 0:
             chosen_line_num = random.randint(1, len(self.intro_sequence_texts) - 1)
             write_on(self.intro_sequence_texts[chosen_line_num], TEXT_SPEED_MEDIUM, None)
-            input("Press Enter to continue...")
+            input(">> PRESS [ENTER] TO CHALLENGE ENEMY <<")
         elif self.num_defeated == 0:
             write_on(self.intro_sequence_texts[0], TEXT_SPEED_MEDIUM, None)
-            input("Press Enter to continue...")
+            input(">> PRESS [ENTER] TO FIGHT <<")
+
+    def on_defeated(self):
+        cls = type(self)
+        cls.num_defeated += 1
+        if cls.revivals is not None:
+            cls.revivals += 1

@@ -10,13 +10,13 @@ from player import Player
 def main():
     player = Player()
     main_menu()
-    intro_sequence()
+    #intro_sequence()
     for level in range(3):
-        enemy = random.choice(ALL_ENEMIES)()
-        if battle(player, enemy):
-            enemy_class = type(enemy)
-            if enemy_class.revivals is not None:
-                enemy_class.revivals += 1
+        for sublevel in range(5):
+            enemy = random.choice(ALL_ENEMIES)()
+            stage = [level + 1, sublevel + 1] #count starts from 0, therefore + 1
+            if battle(player, enemy, stage):
+                enemy.on_defeated()
 
 
 

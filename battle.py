@@ -57,21 +57,21 @@ def generate_loss_screen(enemy):
     table.add_row()
     return table
 
-def check_for_win(player, enemy, console, turn_log):
+def check_for_win(player, enemy, stage, console, turn_log):
     if enemy.health <= 0:
         creepy_message = ""
         console.clear()
-        console.print(generate_game_screen(player, enemy, turn_log, creepy_message))
+        console.print(generate_game_screen(player, enemy, stage, turn_log, creepy_message))
         console.print(generate_win_screen(enemy))
         time.sleep(5.0)
         return True
     return False
 
-def check_for_loss(player, enemy, console, turn_log):
+def check_for_loss(player, enemy, stage, console, turn_log):
     if player.health <= 0:
         creepy_message = ""
         console.clear()
-        console.print(generate_game_screen(player, enemy, turn_log, creepy_message))
+        console.print(generate_game_screen(player, enemy, stage, turn_log, creepy_message))
         console.print(generate_loss_screen(enemy))
         time.sleep(5.0)
         return True
@@ -102,7 +102,7 @@ def stat_line(label: str, current, maximum) -> str:
     numbers = f"{current}/{maximum}"
     return f"{label:>8}{render_bar(current, maximum)}{numbers:>8}\n" #change numbers max size from 7 to 9 if stats actually get over 999
 
-def generate_game_screen(player, enemy, turn_log, creepy_message) -> Panel:
+def generate_game_screen(player, enemy, stage, turn_log, creepy_message) -> Panel:
     #UI of the game screen
     content_player = Text(justify = "center")
     content_player.append(f"{player.name}\n", style="bold green")
@@ -134,6 +134,7 @@ def generate_game_screen(player, enemy, turn_log, creepy_message) -> Panel:
     table = Table.grid(expand=True)
     table.add_column(justify = "left", ratio=1)
     table.add_column(justify = "right", ratio=1)
+    table.add_row()
     table.add_row(content_player, content_enemy)
 
     if creepy_text:
@@ -141,12 +142,12 @@ def generate_game_screen(player, enemy, turn_log, creepy_message) -> Panel:
     else:
         layout = Group(table, action_text)
 
-    return Panel(layout, title="[bold yellow]Stage placeholder (eg. 1st Floor)[/bold yellow]", border_style="blue")
+    return Panel(layout, title=f"[grey82][| Level {stage[0]} | Encounter {stage[1]} |][/grey82]", border_style="dark_red")
 
 
 
 # Game loop
-def battle(player, enemy):
+def battle(player, enemy, stage: list[int,int]):
     console = Console()
     clear_screen()
     turn_log = []
@@ -164,7 +165,7 @@ def battle(player, enemy):
     try:
         while True:
             console.clear()
-            console.print(generate_game_screen(player, enemy, turn_log, creepy_message))
+            console.print(generate_game_screen(player, enemy, stage, turn_log, creepy_message))
 
             if player.state_effects["stun"][1] > 0:
                 turn_log = []
@@ -179,7 +180,7 @@ def battle(player, enemy):
                                     Choice('Forfeit', data="exit")],
                                         settings=PromptSettings(mandatory=False))
 
-                #Player response and plain attack
+                #Exit
                 if result is None or result.value.data == "exit":
                     confirm = select_menu([
                                         Choice('Yes', data="yes"),
@@ -189,6 +190,9 @@ def battle(player, enemy):
                         break
                     elif confirm.value.data == "no":
                         continue
+
+
+                #Plain Attack
                 if result.value.data == "attack":
                     if player.stamina < player.attack_stamina_cost:
                         if "Not enough stamina" not in turn_log:
@@ -240,11 +244,11 @@ def battle(player, enemy):
 
             creepy_message = ""
             #check for win condition
-            if check_for_win(player, enemy, console, turn_log):
+            if check_for_win(player, enemy, stage, console, turn_log):
                 return True
 
             console.clear()
-            console.print(generate_game_screen(player, enemy, turn_log, creepy_message))
+            console.print(generate_game_screen(player, enemy, stage, turn_log, creepy_message))
 
             if enemy.state_effects["stun"][1] > 0:
                 turn_log.append(f"- {enemy.name} is stunned")
@@ -253,7 +257,7 @@ def battle(player, enemy):
                 turn_log.append(f"- {enemy_message}")
 
                 #check for loss condition
-                if check_for_loss(player, enemy, console, turn_log):
+                if check_for_loss(player, enemy, stage, console, turn_log):
                     return False
 
 
@@ -273,12 +277,12 @@ def battle(player, enemy):
             if random.random() <= CREEPY_MESSAGE_CHANCE:
                 creepy_message = random.choice(CREEPY_MESSAGES)
 
-            console.print(generate_game_screen(player, enemy, turn_log, creepy_message))
+            console.print(generate_game_screen(player, enemy, stage, turn_log, creepy_message))
 
             # Check for win/loss
-            if check_for_win(player, enemy, console, turn_log):
+            if check_for_win(player, enemy, stage, console, turn_log):
                 return True
-            if check_for_loss(player, enemy, console, turn_log):
+            if check_for_loss(player, enemy, stage, console, turn_log):
                 return False
 
 
@@ -293,4 +297,5 @@ if __name__ == "__main__":
     from player import Player
     player = Player()
     enemy = EnemyUnit7()
-    battle(player, enemy)
+    stage = [1,1]
+    battle(player, enemy, stage)

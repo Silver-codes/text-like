@@ -8,9 +8,9 @@ from spells import SPARK, Spell
 class EnemyUnit7(Enemy):
     name = "Unit 7-Null"
     revivals = None
-    num_defeated = 1
+    num_defeated = 0
 
-    health_max = 250
+    health_max = 20
     health_regen = 0
 
     attack_power = 3

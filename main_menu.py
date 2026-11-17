@@ -22,7 +22,15 @@ def select_menu(choices, settings=PromptSettings()):
 
 def main_menu():
     console = Console()
-    console.print(Panel("[bold yellow]Welcome to Text-Like[/bold yellow]", title="Text-like", style="blue"))
+    #console.print(Panel("[bold blue3]Welcome to Text-Like[/bold blue3]", title="Text-like", style="navy_blue"))
+    console.print(r"""
+        ████████╗███████╗██╗  ██╗████████╗           ██╗     ██╗██╗  ██╗███████╗
+        ╚══██╔══╝██╔════╝╚██╗██╔╝╚══██╔══╝           ██║     ██║██║ ██╔╝██╔════╝
+           ██║   █████╗   ╚███╔╝    ██║    █████╗    ██║     ██║█████╔╝ █████╗
+           ██║   ██╔══╝   ██╔██╗    ██║    ╚════╝    ██║     ██║██╔═██╗ ██╔══╝
+           ██║   ███████╗██╔╝ ██╗   ██║              ███████╗██║██║  ██╗███████╗
+           ╚═╝   ╚══════╝╚═╝  ╚═╝   ╚═╝              ╚══════╝╚═╝╚═╝  ╚═╝╚══════╝
+           """, style= "dark_red")
     result = select_menu(['Continue', 'Load game', 'Exit'],
                          settings=PromptSettings(mandatory=False))
 
