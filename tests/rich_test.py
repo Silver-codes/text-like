@@ -1,3 +1,5 @@
+from xxlimited import new
+
 from rich import print
 from rich.console import Console
 from rich.layout import Layout
@@ -34,3 +36,14 @@ layout.split_row(
 )
 
 console.print(layout)
+
+current = 250
+current_max = 1000
+amount = 10
+amount_to_add = (amount / current_max) * current
+new_max = round(current_max + amount)
+new_value = round(current + amount_to_add)
+print(f"Old health percentage: {(current / current_max) * 100}")
+print(f"New max: {new_max}")
+print(f"New value: {new_value}")
+print(f"New health percentage: {(new_value / new_max) * 100}")

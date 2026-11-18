@@ -231,3 +231,6 @@ class Player:
         if self.state_effects["defend"] == [0, 0]:
             self.defend_armor_active = 0
         return message
+
+    def revive(self): #TODO what happens when player dies (restore stats, choose what to keep etc.)
+        pass
