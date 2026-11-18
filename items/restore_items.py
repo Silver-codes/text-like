@@ -78,7 +78,8 @@ STAMINA__NANOBOTS = RestoreItem(
     "stamina",
     10000)
 
-MANA_NANOBOTS = RestoreItem("Mana Nanobots",
+MANA_NANOBOTS = RestoreItem(
+    "Mana Nanobots",
     "Restores full mana",
     "You let {name} crawl under your skin. Restores full {stat}",
     "mana",

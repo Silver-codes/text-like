@@ -24,68 +24,69 @@ class PlusStatUpgrade(Upgrade):
 
 
 ### Level 1 ###
-HEALTH_SYRINGE = RestoreItem(
-    "Health Syringe",
-    "Restores +10 health",
-    "You injected {name} into your arm. +{amount} {stat}.",
+HEALTH_BOOST1 = PlusStatUpgrade(
+    "Health Boost *",
+    "+5 max health",
     "health",
-    10)
+    "health_max",
+    5)
 
-STAMINA_SYRINGE = RestoreItem(
-    "Stamina Syringe",
-    "Restores +8 stamina",
-    "You injected {name} into your arm. +{amount} {stat}.",
+STAMINA_BOOST1 = PlusStatUpgrade(
+    "Stamina Boost *",
+    "+3 max stamina",
     "stamina",
-    8)
+    "stamina_max",
+    3)
 
-MANA_SYRINGE = RestoreItem(
-    "Mana Syringe",
-    "Restores +6 mana",
-    "You injected {name} into your arm. +{amount} {stat}.",
+MANA_BOOST1 = PlusStatUpgrade(
+    "Mana Boost *",
+    "+3 max mana",
     "mana",
-    6)
+    "mana_max",
+    3)
 
 
 ### Level 2 ###
-HEALTH_CARTRIDGE = RestoreItem(
-    "Health Cartridge",
-    "Restores +25 health",
-    "You draw out of {name}. +{amount} {stat}.",
+HEALTH_BOOST2 = PlusStatUpgrade(
+    "Health Boost **",
+    "+15 max health",
     "health",
-    25)
-
-STAMINA_CARTRIDGE = RestoreItem(
-    "Stamina Cartridge",
-    "Restores +15 stamina",
-    "You draw out of {name}. +{amount} {stat}.",
-    "stamina",
+    "health_max",
     15)
 
-MANA_CARTRIDGE = RestoreItem(
-    "Mana Cartridge",
-    "Restores +12 mana",
-    "You draw out of {name}. +{amount} {stat}.",
+STAMINA_BOOST2 = PlusStatUpgrade(
+    "Stamina Boost **",
+    "+8 max stamina",
+    "stamina",
+    "stamina_max",
+    8)
+
+MANA_BOOST2 = PlusStatUpgrade(
+    "Mana Boost **",
+    "+7 max mana",
     "mana",
-    12)
+    "mana_max",
+    7)
 
 
 ### Level 3 ###
-HEALTH_NANOBOTS = RestoreItem(
-    "Health Nanobots",
-    "Restores full health",
-    "You let {name} crawl under your skin. Restores full {stat}",
+HEALTH_BOOST3 = PlusStatUpgrade(
+    "Health Boost ***",
+    "+30 max health",
     "health",
-    10000)
+    "health_max",
+    30)
 
-STAMINA__NANOBOTS = RestoreItem(
-    "Stamina Nanobots",
-    "Restores full stamina",
-    "You let {name} crawl under your skin. Restores full {stat}",
+STAMINA_BOOST3 = PlusStatUpgrade(
+    "Stamina Boost ***",
+    "+15 max stamina",
     "stamina",
-    10000)
+    "stamina_max",
+    15)
 
-MANA_NANOBOTS = RestoreItem("Mana Nanobots",
-    "Restores full mana",
-    "You let {name} crawl under your skin. Restores full {stat}",
+MANA_BOOST3 = PlusStatUpgrade(
+    "Mana Boost ***",
+    "+13 max mana",
     "mana",
-    10000)
+    "mana_max",
+    13)

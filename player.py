@@ -46,11 +46,11 @@ class Player:
         self.mana_max = 25
         self.mana_regen = 1
 
-        self.evasion = 0.01
+        self.__evasion = 0.01
         self.evasion_max = 0.01
 
-        self.armor = 0.0
-        self.armor_max = 0.0
+        self.__armor = 0 #is subtracked from the damage taken
+        self.armor_max = 0
         self.defend_armor = 1
         self.defend_armor_active = 0 #active at the moment. Adds defend_armor when activated
         self.defend_armor_duration = 1
@@ -73,6 +73,9 @@ class Player:
             STAMINA_CARTRIDGE : 4,
             MANA_NANOBOTS : 2
         }
+
+        self.upgrades = []
+        self.upgrades_permanent = []
 
 
     @property
@@ -119,6 +122,32 @@ class Player:
             self.__mana = self.mana_max
         else:
             self.__mana = value
+
+    @property
+    def evasion(self):
+        return self.__evasion
+
+    @evasion.setter
+    def evasion(self, value):
+        if value < 0:
+            self.__evasion = 0
+        elif value > self.evasion_max:
+            self.__evasion = self.evasion_max
+        else:
+            self.__evasion = value
+
+    @property
+    def armor(self):
+        return self.__armor
+
+    @armor.setter
+    def armor(self, value):
+        if value < 0:
+            self.__armor = 0
+        elif value > self.armor_max:
+            self.__armor = self.armor_max
+        else:
+            self.__armor = value
 
     @property
     def attack_power(self):
@@ -231,6 +260,17 @@ class Player:
         if self.state_effects["defend"] == [0, 0]:
             self.defend_armor_active = 0
         return message
+
+    def refresh_end_battle(self): #actions that happen at the end of every BATTLE
+        # Regeneration
+        if self.stamina < self.stamina_max:
+            self.stamina += (self.stamina_regen * 3)
+        if self.mana < self.mana_max:
+            self.mana += (self.mana_regen * 3)
+
+        # Resets all state effects
+        self.state_effects = self.state_effects = {effect: [0, 0] for effect in EFFECT_TYPES}
+
 
     def revive(self): #TODO what happens when player dies (restore stats, choose what to keep etc.)
         pass
