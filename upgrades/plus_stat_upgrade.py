@@ -3,7 +3,7 @@ from upgrades.base_upgrade import Upgrade
 
 ###TODO NOT FINISHED, JUST COPIED RESTORE_ITEMS##
 class PlusStatUpgrade(Upgrade):
-    STATS = ("health", "stamina", "mana")
+    STATS = ("health", "stamina", "mana", "armor", "evasion")
 
     def __init__(self, name, description, stat, stat_max, amount):
         super().__init__(name, description)
@@ -45,6 +45,20 @@ MANA_BOOST1 = PlusStatUpgrade(
     "mana_max",
     3)
 
+ARMOR_BOOST1 = PlusStatUpgrade(
+    "Armor Boost *",
+    "+1 armor",
+    "armor",
+    "armor_max",
+    1)
+
+EVASION_BOOST1 = PlusStatUpgrade(
+    "Evasion Boost *",
+    "+1% chance of evasion",
+    "evasion",
+    "evasion_max",
+    0.01)
+
 
 ### Level 2 ###
 HEALTH_BOOST2 = PlusStatUpgrade(
@@ -68,6 +82,19 @@ MANA_BOOST2 = PlusStatUpgrade(
     "mana_max",
     7)
 
+ARMOR_BOOST2 = PlusStatUpgrade(
+    "Armor Boost **",
+    "+2 armor",
+    "armor",
+    "armor_max",
+    2)
+
+EVASION_BOOST2 = PlusStatUpgrade(
+    "Evasion Boost **",
+    "+2% chance of evasion",
+    "evasion",
+    "evasion_max",
+    0.02)
 
 ### Level 3 ###
 HEALTH_BOOST3 = PlusStatUpgrade(
@@ -90,3 +117,17 @@ MANA_BOOST3 = PlusStatUpgrade(
     "mana",
     "mana_max",
     13)
+
+ARMOR_BOOST3 = PlusStatUpgrade(
+    "Armor Boost ***",
+    "+4 armor",
+    "armor",
+    "armor_max",
+    2)
+
+EVASION_BOOST3 = PlusStatUpgrade(
+    "Evasion Boost ***",
+    "+3% chance of evasion",
+    "evasion",
+    "evasion_max",
+    0.03)

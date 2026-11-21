@@ -22,20 +22,20 @@ ALL_ITEMS = [
     MANA_NANOBOTS
 ]
 
-ITEMS_LEVEL1 = [
-    HEALTH_SYRINGE,
-    STAMINA_SYRINGE,
-    MANA_SYRINGE
-]
-
-ITEMS_LEVEL2 = [
-    HEALTH_CARTRIDGE,
-    STAMINA_CARTRIDGE,
-    MANA_CARTRIDGE,
-]
-
-ITEMS_LEVEL3 = [
-    HEALTH_NANOBOTS,
-    STAMINA__NANOBOTS,
-    MANA_NANOBOTS
-]
+ITEMS_IN_LEVELS = {
+    "level1": [
+        HEALTH_SYRINGE,
+        STAMINA_SYRINGE,
+        MANA_SYRINGE
+    ],
+    "level2": [
+        HEALTH_CARTRIDGE,
+        STAMINA_CARTRIDGE,
+        MANA_CARTRIDGE,
+    ],
+    "level3": [
+        HEALTH_NANOBOTS,
+        STAMINA__NANOBOTS,
+        MANA_NANOBOTS
+    ]
+}

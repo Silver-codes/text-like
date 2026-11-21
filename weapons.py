@@ -2,8 +2,11 @@
 
 
 class Weapon:
-    def __init__(self, name, damage, cost, type, effect_damage, effect_length) -> None:
+    card_color = "red"
+    card_type = "Weapon"
+    def __init__(self, name, description, damage, cost, type, effect_damage, effect_length) -> None:
         self.name = name
+        self.description = description
         self.damage = damage
         self.cost = cost
         self.type = type
@@ -11,10 +14,22 @@ class Weapon:
         self.effect_length = effect_length
 
 ### Weapons - Level 1 ###
-FISTS = Weapon("Fists", 2, 3, "normal", 0, 0)
-SHIV = Weapon("Shiv", 4, 2, "normal", 0, 0)
-BRASS_KNUCKLES = Weapon("Brass Knuckles", 3, 3, "normal", 0, 0)
-RUSTY_PIPE = Weapon("Rusty Pipe", 5, 5, "normal", 0, 0)
+FISTS = Weapon(
+    "Fists",
+    "Just your bare fists",
+    2, 3, "normal", 0, 0)
+SHIV = Weapon(
+    "Shiv",
+    "A small makeshift knife. It can stab fast, but doesn't do a whole lot of damage",
+    4, 2, "normal", 0, 0)
+BRASS_KNUCKLES = Weapon(
+    "Brass Knuckles",
+    "Weathered pieces of metal that will hopefully make your punches hit harder",
+    3, 3, "normal", 0, 0)
+RUSTY_PIPE = Weapon(
+    "Rusty Pipe",
+    "It's a pipe. And it's rusty. Also surprisingly heavy",
+    5, 5, "normal", 0, 0)
 
 ### Weapons - Level 2 ###
 
@@ -26,8 +41,8 @@ RUSTY_PIPE = Weapon("Rusty Pipe", 5, 5, "normal", 0, 0)
 ALL_WEAPONS = [SHIV, BRASS_KNUCKLES, RUSTY_PIPE]
 WEAPONS_IN_LEVELS = {
     "level1": [SHIV, BRASS_KNUCKLES, RUSTY_PIPE],
-    "level2": [SHIV, BRASS_KNUCKLES, RUSTY_PIPE],
-    "level3": [SHIV, BRASS_KNUCKLES, RUSTY_PIPE]
+    "level2": [],
+    "level3": []
 
 }
 

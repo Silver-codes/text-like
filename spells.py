@@ -2,8 +2,11 @@
 
 
 class Spell:
-    def __init__(self, name, damage, cost, type, effect_damage, effect_length) -> None:
+    card_type = "Spell"
+    card_color = "blue"
+    def __init__(self, name, description, damage, cost, type, effect_damage, effect_length) -> None:
         self.name = name
+        self.description = description
         self.damage = damage
         self.cost = cost
         self.type = type
@@ -12,21 +15,48 @@ class Spell:
 
 ### Spells - level 1 ###
 
-SPARK = Spell("Spark", 1, 5, "fire", 1, 3)
-ELECTRIC_PULSE = Spell("Electric Pulse", 2, 4, "electric", 0, 0)
-POISON_DART = Spell("Poison Dart", 0, 3, "poison", 2, 4)
+SPARK = Spell(
+    "Spark",
+    "Sets your enemy on fire with sparks dealing damage over time",
+    1, 5, "fire", 1, 3)
+ELECTRIC_PULSE = Spell(
+    "Electric Pulse",
+   "Shocks enemy with light electric shock",
+   2, 4, "electric", 0, 0)
+POISON_DART = Spell(
+    "Poison Dart",
+    "Poison your enemy dealing damage over time",
+    0, 3, "poison", 2, 4)
 
 
 
 ### Spells - level 2 ###
-STUN = Spell("Stun", 0, 5, "stun", 0, 3)
-FIREBALL = Spell("Fireball", 4, 10, "fire", 2, 3)
-POISON_SPIKE = Spell("Poison Spike", 0, 8, "poison", 2, 4)
-FROST_BEAM = Spell("Frost Beam", 6, 7, "ice", 0, 0)
+STUN = Spell(
+    "Stun",
+    "Prevents enemy action",
+    0, 5, "stun", 0, 1)
+FIREBALL = Spell(
+    "Fireball",
+    "Hurl a fireball at an enemy, setting him on fire",
+    4, 10, "fire", 2, 3)
+POISON_SPIKE = Spell(
+    "Poison Spike",
+    "Applies strong poison to your enemy",
+    0, 8, "poison", 2, 4)
+FROST_BEAM = Spell(
+    "Frost Beam",
+    "Make your enemy wish it wore a sweater",
+    6, 7, "ice", 0, 0)
 
 ### Spells - level 3 ###
-SEMPRA_SECTUM = Spell("Sempra Sectum", 12, 10, "bleed", 4, 3)
-TELEKINESIS = Spell("Telekinesis", 30, 15, "normal", 0, 0)
+SEMPRA_SECTUM = Spell(
+    "Sempra Sectum",
+    "For enemies",
+    12, 10, "bleed", 4, 3)
+TELEKINESIS = Spell(
+    "Telekinesis",
+    "Lift your enemy and perform a delicate bone-breaking smash",
+    30, 15, "normal", 0, 0)
 
 ### Spell lists ###
 ALL_SPELLS = [
@@ -43,8 +73,8 @@ ALL_SPELLS = [
 
 SPELLS_IN_LEVELS = {
     "level1": [SPARK, ELECTRIC_PULSE, POISON_DART],
-    "level2": [SPARK, ELECTRIC_PULSE, POISON_DART, STUN, FIREBALL, POISON_SPIKE, FROST_BEAM],
-    "level3": [SPARK, ELECTRIC_PULSE, POISON_DART, STUN, FIREBALL, POISON_SPIKE, FROST_BEAM, SEMPRA_SECTUM, TELEKINESIS]
+    "level2": [STUN, FIREBALL, POISON_SPIKE, FROST_BEAM],
+    "level3": [SEMPRA_SECTUM, TELEKINESIS]
 
 }
 

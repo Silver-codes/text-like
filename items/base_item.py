@@ -1,4 +1,6 @@
 class Item:
+    card_type = "Item"
+    card_color = "green"
     def __init__(self, name: str, description: str, used_message: str):
         self.name = name
         self.description = description
