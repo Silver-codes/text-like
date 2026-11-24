@@ -7,3 +7,8 @@ class Upgrade:
 
     def apply(self, player):
         pass
+
+    def pick_up(self, player):
+        player.upgrades.append(self)
+        self.apply(player)
+        return f"You obtained {self.name}"

@@ -69,9 +69,9 @@ class Player:
         # for defend its [0, num_rounds left], dmg reduced by defend set in self.defend_armor
 
         self.items = {
-            HEALTH_SYRINGE : 3,
-            STAMINA_CARTRIDGE : 4,
-            MANA_NANOBOTS : 2
+            HEALTH_SYRINGE : 1,
+            STAMINA_CARTRIDGE : 1,
+            MANA_NANOBOTS : 1
         }
 
         self.upgrades = []
@@ -270,7 +270,6 @@ class Player:
 
         # Resets all state effects
         self.state_effects = self.state_effects = {effect: [0, 0] for effect in EFFECT_TYPES}
-
 
     def revive(self): #TODO what happens when player dies (restore stats, choose what to keep etc.)
         pass

@@ -13,6 +13,10 @@ class Weapon:
         self.effect_damage = effect_damage
         self.effect_length = effect_length
 
+    def pick_up(self, player):
+        player.weapon = self
+        return f"You obtained a weapon - {self.name}"
+
 ### Weapons - Level 1 ###
 FISTS = Weapon(
     "Fists",

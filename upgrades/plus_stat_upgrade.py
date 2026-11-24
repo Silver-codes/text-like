@@ -1,7 +1,6 @@
 from upgrades.base_upgrade import Upgrade
 
 
-###TODO NOT FINISHED, JUST COPIED RESTORE_ITEMS##
 class PlusStatUpgrade(Upgrade):
     STATS = ("health", "stamina", "mana", "armor", "evasion")
 

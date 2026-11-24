@@ -13,6 +13,10 @@ class Spell:
         self.effect_damage = effect_damage
         self.effect_length = effect_length
 
+    def pick_up(self, player):
+        player.spells.append(self)
+        return f"You obtained a spell - {self.name}\nYour spells are now:\n{", ".join(spell.name for spell in player.spells)}"
+
 ### Spells - level 1 ###
 
 SPARK = Spell(
