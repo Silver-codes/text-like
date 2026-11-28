@@ -129,8 +129,8 @@ class Player:
 
     @evasion.setter
     def evasion(self, value):
-        if value < 0:
-            self.__evasion = 0
+        if value < 0.0:
+            self.__evasion = 0.0
         elif value > self.evasion_max:
             self.__evasion = self.evasion_max
         else:
@@ -272,4 +272,51 @@ class Player:
         self.state_effects = self.state_effects = {effect: [0, 0] for effect in EFFECT_TYPES}
 
     def revive(self): #TODO what happens when player dies (restore stats, choose what to keep etc.)
+
         pass
+
+    def print_stats(self): #For debugging - prints out all stats
+        print(f"Name: {self.name}")
+        print()
+        print(f"Health: {self.health}")
+        print(f"Health percentage: {self.health_percentage}%")
+        print(f"Health max: {self.health_max}")
+        print()
+        print(f"Weapon: {self.weapon.name}")
+        print(f"Strength: {self.strength}")
+        print(f"Strength max: {self.strength_max}")
+        print(f"Attack power: {self.attack_power}")
+        print(f"Attack stamina cost: {self.attack_stamina_cost}")
+        print()
+        print(f"Stamina: {self.stamina}")
+        print(f"Stamina max: {self.stamina_max}")
+        print(f"Stamina regen: {self.stamina_regen}")
+        print()
+        print(f"Magick power: {self.magic_power}")
+        print([spell.name for spell in self.spells])
+        print(f"Mana: {self.__mana}")
+        print(f"Mana max: {self.mana_max}")
+        print(f"Mana regen: {self.mana_regen}")
+        print()
+        print(f"Evasion: {self.evasion}")
+        print(f"Evasion max: {self.evasion_max}")
+        print()
+        print(f"Armor: {self.__armor}")
+        print(f"Armor max: {self.armor_max}")
+        print(f"Defend armor: {self.defend_armor}")
+        print(f"Defend armor duration: {self.defend_armor_duration}")
+        print()
+        print(f"Vulnerability:{self.vulnerability}")
+        print()
+        print(f"State effects: {self.state_effects}")
+        print()
+        print(", ".join(f"{item.name} x{count}" for item, count in self.items.items()))
+        print("Upgrades:")
+        print([upgrade.name for upgrade in self.upgrades])
+        print("Upgrades permanent:")
+        print([upgrade.name for upgrade in self.upgrades_permanent])
+
+
+if __name__ == "__main__":
+    player = Player()
+    player.print_stats()

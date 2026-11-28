@@ -13,13 +13,28 @@ class PlusStatUpgrade(Upgrade):
         self.amount = amount
 
     def apply(self, player):
-        current = getattr(player, self.stat)
-        current_max = getattr(player, self.stat_max)
-        amount_to_add = (self.amount / current_max) * current
-        new_max = round(current_max + self.amount)
-        new_value = round(current + amount_to_add)
-        setattr(player, self.stat_max, new_max)
-        setattr(player, self.stat, new_value)
+        if self.stat != "evasion":
+            current = getattr(player, self.stat)
+            current_max = getattr(player, self.stat_max)
+            new_max = round(current_max + self.amount)
+            if current_max != 0:
+                amount_to_add = (self.amount / current_max) * current
+            else:
+                amount_to_add = new_max
+            new_value = round(current + amount_to_add)
+            setattr(player, self.stat_max, new_max)
+            setattr(player, self.stat, new_value)
+        else:
+            current = getattr(player, self.stat)
+            current_max = getattr(player, self.stat_max)
+            new_max = current_max + self.amount
+            if current_max != 0:
+                amount_to_add = (self.amount / current_max) * current
+            else:
+                amount_to_add = new_max
+            new_value = current + amount_to_add
+            setattr(player, self.stat_max, new_max)
+            setattr(player, self.stat, new_value)
 
 
 ### Level 1 ###

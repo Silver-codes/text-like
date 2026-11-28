@@ -61,6 +61,7 @@ def card_roulette(player: Player, stage: list[int]):
         table.add_row(card1.description, card2.description, card3.description)
 
         console.print(table)
+        print()
 
 
         result = select_menu([
@@ -92,6 +93,7 @@ def card_roulette(player: Player, stage: list[int]):
             # print(f"evasion:{player.evasion}")
             # print(f"armor:{player.armor}")
             # print([spell.name for spell in player.spells])
+            # print([upgrade.name for upgrade in player.upgrades])
             # print(", ".join(f"{item.name} x{count}" for item, count in player.items.items()))
             print()
             input(">> PRESS [ENTER] TO CONTINUE <<")
